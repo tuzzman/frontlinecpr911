@@ -19,7 +19,6 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT || 21 }}  # Default FTP port if not specified
           protocol: ftp  # Hostinger uses standard FTP
           local-dir: ./
           server-dir: ${{ secrets.FTP_REMOTE_PATH || './' }}
