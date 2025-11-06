@@ -13,6 +13,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Show deploy target (debug)
+        run: |
+          echo "DEBUG: Will deploy to server: ${{ secrets.FTP_HOST }}"
+          echo "DEBUG: Will deploy to server-dir: ${{ secrets.FTP_REMOTE_PATH || './' }}"
+          echo "DEBUG: Local working directory listing:"
+          ls -la
+        shell: bash
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
