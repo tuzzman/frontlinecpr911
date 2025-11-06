@@ -82,6 +82,7 @@
     height: 40px;
     overflow: hidden;
     pointer-events: none;
+    z-index: 1000; /* ensure ekg sits above header::after gradient */
 }
 
 .ekg-svg {
