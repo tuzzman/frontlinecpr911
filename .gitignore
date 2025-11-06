@@ -9,6 +9,11 @@ node_modules/
 # Environment / secrets
 .env
 *.env
+Github_key*
+
+# Debug artifacts generated in CI (not local)
+deployed-at.txt
+site-manifest.txt
 
 # Logs
 logs/
