@@ -18,9 +18,9 @@
     <link rel="icon" type="image/png" href="assets/img/favicon-red.png">
     
     <!-- Styles -->
-    <!-- Revert to primary stylesheet (v2 unavailable on host) -->
-    <link rel="stylesheet" href="assets/css/style.css">
-    <style>/* ensure ekg visible above header gradient even if CDN caches CSS */ .header-ekg-container{z-index:1000 !important;}</style>
+    <!-- Use versioned stylesheet to bust mobile cache; imports style.css -->
+    <link rel="stylesheet" href="assets/css/style-20251106.css">
+    <!-- ekg z-index now in CSS layering; inline override no longer required -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
     <!-- Intersection Observer Fallback -->
