@@ -40,13 +40,30 @@ jobs:
           protocol: ftp  # Hostinger uses standard FTP
           local-dir: ./
           server-dir: /domains/frontlinecpr911.com/public_html
+          log-level: verbose
           dangerous-clean-slate: true  # Force fresh upload (deletes sync state)
           exclude: |
             **/.git**
-            **/.github/**
             **/node_modules/**
             **/*.map
-            README.md
-            index.html.bak
-            remote_index.html
             Github_key*
+
+      - name: Verify public pages (HTTP)
+        run: |
+          set -e
+          urls=(
+            "https://frontlinecpr911.com/deployed-at.txt"
+            "https://frontlinecpr911.com/site-manifest.txt"
+            "https://frontlinecpr911.com/about.html"
+            "https://frontlinecpr911.com/classes.html"
+            "https://frontlinecpr911.com/contact.html"
+          )
+          for u in "${urls[@]}"; do
+            echo "Checking $u"
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$u")
+            echo "HTTP $code for $u"
+            if [[ "$code" != "200" ]]; then
+              echo "WARN: $u returned $code"
+            fi
+          done
+        shell: bash
