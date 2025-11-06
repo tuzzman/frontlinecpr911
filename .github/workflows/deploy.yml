@@ -67,3 +67,12 @@ jobs:
             fi
           done
         shell: bash
+
+      - name: List remote directory (FTP)
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y lftp
+          echo "Listing remote /domains/frontlinecpr911.com/public_html"
+          lftp -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "${{ secrets.FTP_HOST }}" -e "set ssl:verify-certificate no; set ftp:passive-mode true; cd /domains/frontlinecpr911.com/public_html; cls -l; bye"
+        shell: bash
