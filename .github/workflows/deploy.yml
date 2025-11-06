@@ -30,3 +30,4 @@ jobs:
           protocol: ftp  # Hostinger uses standard FTP
           local-dir: ./
           server-dir: ${{ secrets.FTP_REMOTE_PATH || './' }}
+          dangerous-clean-slate: true  # Force fresh upload (deletes sync state)
