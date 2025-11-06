@@ -31,22 +31,11 @@ jobs:
           ls -la
         shell: bash
 
-      - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+      - name: Deploy via Git-FTP
+        uses: sebrot/git-ftp@v3.0.1
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp  # Hostinger uses standard FTP
-          local-dir: ./
-          server-dir: /domains/frontlinecpr911.com/public_html
-          log-level: verbose
-          dangerous-clean-slate: true  # Force fresh upload (deletes sync state)
-          exclude: |
-            **/.git**
-            **/node_modules/**
-            **/*.map
-            Github_key*
+          url: ftp://${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}@${{ secrets.FTP_HOST }}/domains/frontlinecpr911.com/public_html
+          options: --all --verbose
 
       - name: Verify public pages (HTTP)
         run: |
