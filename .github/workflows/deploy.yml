@@ -16,7 +16,7 @@ jobs:
       - name: Show deploy target (debug)
         run: |
           echo "DEBUG: Will deploy to server: ${{ secrets.FTP_HOST }}"
-          echo "DEBUG: Will deploy to server-dir: ${{ secrets.FTP_REMOTE_PATH || '/domains/frontlinecpr911.com/public_html' }}"
+          echo "DEBUG: Will deploy to server-dir: /domains/frontlinecpr911.com/public_html"
           echo "DEBUG: Local working directory listing:"
           ls -la
         shell: bash
@@ -29,7 +29,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp  # Hostinger uses standard FTP
           local-dir: ./
-          server-dir: ${{ secrets.FTP_REMOTE_PATH || '/domains/frontlinecpr911.com/public_html' }}
+          server-dir: /domains/frontlinecpr911.com/public_html
           dangerous-clean-slate: true  # Force fresh upload (deletes sync state)
           exclude: |
             **/.git**
