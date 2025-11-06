@@ -5,42 +5,21 @@ on:
     branches: [ main ]
 
 jobs:
-  # FTP/FTPS deployment using SamKirkland's action
-  ftp-deploy:
-    name: Deploy via FTP/FTPS
+  # FTP deployment to Hostinger
+  deploy:
+    name: Deploy to Hostinger
     runs-on: ubuntu-latest
-    if: ${{ secrets.DEPLOY_METHOD == 'ftp' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy via FTP/FTPS
+      - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
-          protocol: ftps
+          port: ${{ secrets.FTP_PORT || 21 }}  # Default FTP port if not specified
+          protocol: ftp  # Hostinger uses standard FTP
           local-dir: ./
-          server-dir: ${{ secrets.FTP_REMOTE_PATH }}
-
-  # SFTP deployment using scp (SSH). Requires an SSH private key in secrets.
-  sftp-deploy:
-    name: Deploy via SFTP (SSH)
-    runs-on: ubuntu-latest
-    if: ${{ secrets.DEPLOY_METHOD == 'sftp' }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Copy files with SFTP (scp)
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTP_USERNAME }}
-          port: ${{ secrets.SFTP_PORT }}
-          key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SFTP_PASSPHRASE }}
-          source: "./"
-          target: ${{ secrets.SFTP_REMOTE_PATH }}
+          server-dir: ${{ secrets.FTP_REMOTE_PATH || './' }}
