@@ -13,6 +13,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Generate deploy manifest
+        run: |
+          set -e
+          echo "Deployed at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" > deployed-at.txt
+          echo "Listing local files (recursive) into site-manifest.txt"
+          ls -R1 > site-manifest.txt
+          echo "Manifest preview (first 50 lines):"
+          head -n 50 site-manifest.txt
+        shell: bash
+
       - name: Show deploy target (debug)
         run: |
           echo "DEBUG: Will deploy to server: ${{ secrets.FTP_HOST }}"
