@@ -39,7 +39,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           local-dir: ./
-          server-dir: /domains/frontlinecpr911.com/public_html
+          server-dir: /domains/frontlinecpr911.com/public_html/
           log-level: verbose
           dangerous-clean-slate: true
           exclude: |
