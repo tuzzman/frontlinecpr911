@@ -1,0 +1,527 @@
+/*
+ * FRONT LINECPR911 MASTER STYLESHEET
+ * Theme: Professional, High-Contrast Red, Black, and White
+ * Approach: Mobile-First and CSS Variables for Global Propagation
+ */
+
+/* ------------------------------------------------ */
+/* 1. CSS VARIABLES (Custom Properties) - Global Theme */
+/* ------------------------------------------------ */
+:root {
+    /* Colors */
+    --color-primary: #CC0000;         /* Primary Red (Action, Alert) */
+    --color-primary-dark: #990000;    /* Darker Red (Hover State) */
+    --color-secondary: #1A1A1A;       /* Near-Black (Text, Headers) */
+    --color-background: #FFFFFF;      /* Pure White (Main Background) */
+    --color-light-gray: #F4F4F4;      /* Off-White/Light Gray (Section Backgrounds) */
+
+    /* Typography */
+    --font-main: 'Roboto', sans-serif;
+    --font-size-base: 16px;
+    --line-height-base: 1.6;
+
+    /* Spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 3rem;
+    --spacing-xl: 5rem;
+
+    /* Border Radius */
+    --radius-sm: 4px;
+}
+
+/* ------------------------------------------------ */
+/* 2. BASE RESET AND TYPOGRAPHY */
+/* ------------------------------------------------ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-main);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    color: var(--color-secondary);
+    background-color: var(--color-background);
+}
+
+h1, h2, h3, h4 {
+    color: var(--color-primary-dark);
+    line-height: 1.2;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 700;
+}
+
+/* Emphasis on high-contrast for readability */
+p {
+    margin-bottom: var(--spacing-md);
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--color-primary-dark);
+}
+
+/* ------------------------------------------------ */
+/* 3. UTILITY & LAYOUT CLASSES (Mobile-First) */
+/* ------------------------------------------------ */
+
+.container {
+    width: 90%; /* Mobile width */
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-md) 0;
+}
+
+.section {
+    padding: var(--spacing-lg) 0;
+}
+
+/* Buttons (Call to Action) */
+.btn {
+    display: inline-block;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-background);
+    border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    color: var(--color-background);
+}
+
+.btn-secondary { /* Useful for 'Learn More' links */
+    background-color: transparent;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-light-gray);
+    color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+}
+
+
+/* ------------------------------------------------ */
+/* 4. MEDIA QUERIES (Desktop Enhancements) */
+/* ------------------------------------------------ */
+
+@media (min-width: 768px) {
+    /* Tablet and larger adjustments */
+    .container {
+        width: 85%;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+    }
+}
+/*
+ * APPEND TO: assets/css/style.css
+ * ------------------------------------------------ */
+/* 5. HOMEPAGE SPECIFIC STYLES */
+/* ------------------------------------------------ */
+
+header {
+    background-color: var(--color-background);
+    border-bottom: 2px solid var(--color-light-gray);
+    padding: var(--spacing-sm) 0;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo h1 {
+    color: var(--color-primary);
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+/* Navigation (Mobile Hidden by Default) */
+.main-nav ul {
+    list-style: none;
+    display: none; /* Hide for mobile initially */
+}
+
+.main-nav a {
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: var(--spacing-xs) 0;
+    display: block;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--color-secondary);
+    cursor: pointer;
+    display: block; /* Show menu button on mobile */
+}
+
+/* Hero Section */
+.hero-section {
+    background-color: var(--color-secondary); /* Black background for contrast */
+    color: var(--color-background);
+    padding: var(--spacing-lg) 0;
+    text-align: center;
+}
+
+.hero-section h2 {
+    color: var(--color-primary); /* Red header on black background */
+    margin-bottom: var(--spacing-sm);
+    font-size: 2rem;
+}
+
+.hero-section p {
+    color: var(--color-light-gray);
+    margin-bottom: var(--spacing-md);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.btn-large {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: 1.1rem;
+}
+
+/* Feature Grid */
+.feature-grid > div {
+    border: 1px solid var(--color-light-gray);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+    background-color: var(--color-background);
+    border-top: 5px solid var(--color-primary);
+}
+
+.feature-grid h4 {
+    color: var(--color-secondary);
+}
+
+
+/* Footer */
+footer {
+    background-color: var(--color-secondary);
+    color: var(--color-light-gray);
+    padding: var(--spacing-md) 0;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+footer a {
+    color: var(--color-primary);
+}
+
+/* Desktop Navigation and Layout */
+@media (min-width: 768px) {
+    .menu-toggle {
+        display: none; /* Hide menu button on desktop */
+    }
+
+    .main-nav ul {
+        display: flex; /* Show navigation links on desktop */
+    }
+
+    .main-nav ul li {
+        margin-left: var(--spacing-md);
+    }
+    
+    .hero-section {
+        padding: var(--spacing-xl) 0;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-md);
+    }
+
+    .feature-grid > div {
+        margin-bottom: 0;
+    }
+}
+/*
+ * APPEND TO: assets/css/style.css
+ * ------------------------------------------------ */
+/* 6. CLASSES PAGE STYLES */
+/* ------------------------------------------------ */
+
+.class-schedule-section .intro-text {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto var(--spacing-lg);
+}
+
+/* Class Card Styling */
+.class-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-light-gray);
+    border-left: 5px solid var(--color-primary);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--color-background);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.class-card h3 {
+    margin-top: 0;
+    color: var(--color-secondary);
+}
+
+.class-card .details {
+    font-size: 0.95rem;
+    line-height: 1.8;
+}
+
+.class-card .capacity {
+    font-weight: 700;
+    color: var(--color-primary-dark);
+    margin-top: var(--spacing-sm);
+}
+
+.class-action {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-sm); /* Separator on mobile */
+    padding-top: var(--spacing-sm);
+    border-top: 1px dashed var(--color-light-gray);
+}
+
+.class-action .price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+/* Sold Out Card Styling */
+.class-card.sold-out {
+    opacity: 0.7;
+    border-left-color: var(--color-secondary);
+}
+
+.class-card.sold-out .price {
+    color: var(--color-secondary);
+}
+
+/* Registration Form Styling */
+.registration-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+    background-color: var(--color-background);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-secondary);
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid #CCCCCC;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+}
+
+.registration-form .submit-btn {
+    width: 100%;
+    margin-top: var(--spacing-md);
+}
+
+/* Desktop Layout for Class Cards */
+@media (min-width: 768px) {
+    .class-card {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+    
+    .class-info {
+        flex-grow: 1;
+    }
+
+    .class-action {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-md);
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+    }
+}
+/*
+ * APPEND TO: assets/css/style.css
+ * ------------------------------------------------ */
+/* 7. ABOUT PAGE STYLES */
+/* ------------------------------------------------ */
+
+.instructor-profile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    align-items: center; /* Center on mobile */
+}
+
+/* Placeholder for the Instructor Image/Block */
+.instructor-profile > [class*="Image"] {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    border: 3px solid var(--color-primary);
+    padding: 5px;
+    background-color: var(--color-light-gray);
+    text-align: center;
+    font-style: italic;
+    color: var(--color-secondary);
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-text h2 {
+    color: var(--color-secondary);
+}
+
+.commitment-section {
+    padding-top: var(--spacing-md);
+}
+
+.commitments-grid > div {
+    border: 1px solid var(--color-light-gray);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    background-color: var(--color-background);
+    border-radius: var(--radius-sm);
+}
+
+/* Desktop Layout for About Page */
+@media (min-width: 768px) {
+    .instructor-profile {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .instructor-profile > [class*="Image"] {
+        flex-shrink: 0;
+        width: 300px;
+        margin-right: var(--spacing-lg);
+    }
+    
+    .profile-text {
+        flex-grow: 1;
+    }
+
+    .commitments-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-md);
+    }
+
+    .commitments-grid > div {
+        margin-bottom: 0;
+    }
+}
+/*
+ * APPEND TO: assets/css/style.css
+ * ------------------------------------------------ */
+/* 8. CONTACT PAGE STYLES */
+/* ------------------------------------------------ */
+
+.contact-details-section .intro-text-center {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto var(--spacing-lg);
+}
+
+.contact-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.contact-info-block {
+    padding: var(--spacing-md);
+    background-color: var(--color-light-gray);
+    border-left: 5px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+}
+
+.contact-form-container {
+    padding: var(--spacing-md);
+    background-color: var(--color-background);
+    border: 1px solid var(--color-light-gray);
+    border-radius: var(--radius-sm);
+}
+
+.contact-form textarea {
+    resize: vertical;
+}
+
+/* Reusing form-group styles defined for registration-form */
+
+/* Group CTA section */
+.group-cta-section {
+    padding: var(--spacing-lg) 0;
+}
+
+.group-cta-section .btn-secondary {
+    color: var(--color-primary); 
+    /* Overriding to use white background and red text for contrast on black section */
+}
+
+/* Desktop Layout for Contact Page */
+@media (min-width: 768px) {
+    .contact-grid {
+        flex-direction: row;
+        gap: var(--spacing-md);
+    }
+    
+    .contact-info-block {
+        flex: 1; /* Takes up 1 part */
+    }
+
+    .contact-form-container {
+        flex: 2; /* Takes up 2 parts, giving the form more space */
+    }
+}

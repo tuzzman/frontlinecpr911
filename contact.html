@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact FrontlineCPR911 | Book Group Training</title>
+    
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <a href="index.html"><h1>FrontlineCPR911</h1></a> 
+            </div>
+            <nav class="main-nav">
+                <button class="menu-toggle" aria-expanded="false">☰</button>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="classes.html">Upcoming Classes</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html" class="active">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section contact-details-section">
+        <div class="container">
+            <h1>Get In Touch With FrontlineCPR911</h1>
+            <p class="intro-text-center">Have a question about class content, certification, or scheduling **private group training** for your business or organization?</p>
+
+            <div class="contact-grid">
+                
+                <div class="contact-info-block">
+                    <h2>General Inquiries</h2>
+                    <p>
+                        **📞 Phone:** (555) 123-4567<br>
+                        **📧 Email:** <a href="mailto:info@frontlinecpr911.com">info@frontlinecpr911.com</a><br>
+                        **📍 Training Location:** [General City/Region]
+                    </p>
+                    <p>We typically respond to emails within one business day.</p>
+                </div>
+                
+                <div class="contact-form-container">
+                    <h2>Send Us a Message</h2>
+                    <form action="/api/contact" method="POST" class="contact-form">
+                        
+                        <div class="form-group">
+                            <label for="c_name">Your Name:</label>
+                            <input type="text" id="c_name" name="c_name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="c_email">Your Email:</label>
+                            <input type="email" id="c_email" name="c_email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="c_subject">Subject (e.g., Group Booking, General Question):</label>
+                            <input type="text" id="c_subject" name="c_subject" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="c_message">Message:</label>
+                            <textarea id="c_message" name="c_message" rows="5" required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary submit-btn">
+                            Send Inquiry
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section group-cta-section" style="background-color: var(--color-secondary); color: var(--color-background);">
+        <div class="container" style="text-align: center;">
+            <h2 style="color: var(--color-primary);">Need On-Site Training for Your Staff?</h2>
+            <p>We provide customized, certified AHA training at your location. Perfect for medical offices, schools, and corporate teams.</p>
+            <a href="#contact-form" class="btn btn-secondary" style="background-color: var(--color-background);">
+                Inquire About Group Rates
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 FrontlineCPR911 Training. All rights reserved. | <a href="admin/dashboard.html">Admin Login</a></p>
+            <p>Training proudly based on Current AHA Guidelines.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

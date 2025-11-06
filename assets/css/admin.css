@@ -1,0 +1,500 @@
+/*
+ * FRONT LINECPR911 ADMIN STYLESHEET
+ * Focus: Clean, Functional, and Secure Login/Dashboard Interface
+ * Note: This imports core styles from style.css for colors/fonts
+ */
+
+/* Import core color variables from the master sheet (if supported by your final build tool) 
+   For simple HTML/CSS, we will manually redefine key variables: */
+:root {
+    --color-primary: #CC0000;
+    --color-secondary: #1A1A1A;
+    --color-background: #FFFFFF;
+    --color-light-gray: #F4F4F4;
+    --font-main: 'Roboto', sans-serif;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --radius-sm: 4px;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--color-light-gray); /* Light gray background for admin area */
+    color: var(--color-secondary);
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* --- Login Box Styling --- */
+
+.login-container {
+    background-color: var(--color-background);
+    padding: 2.5rem;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-container h2 {
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.login-form .form-group {
+    margin-bottom: var(--spacing-md);
+    text-align: left;
+}
+
+.login-form label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid #CCCCCC;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+}
+
+.login-button {
+    background-color: var(--color-secondary); /* Use black for the primary admin button */
+    color: var(--color-background);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 1rem;
+    width: 100%;
+    margin-top: var(--spacing-md);
+    transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+    background-color: var(--color-primary-dark, #444444); /* Slightly darker or use the dark red */
+}
+/*
+ * APPEND TO: assets/css/admin.css
+ * ------------------------------------------------ */
+/* 9. DASHBOARD LAYOUT & COMPONENTS */
+/* ------------------------------------------------ */
+
+/* Overall Layout */
+.admin-wrapper {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    width: 250px;
+    background-color: var(--color-secondary); /* Black Sidebar */
+    color: var(--color-background);
+    padding: var(--spacing-md) 0;
+    flex-shrink: 0;
+}
+
+.logo-admin {
+    text-align: center;
+    padding: 0 var(--spacing-md) var(--spacing-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo-admin h2 {
+    color: var(--color-primary);
+    font-size: 1.5rem;
+    margin-bottom: 0.2rem;
+}
+
+.logo-admin p {
+    font-size: 0.9rem;
+    color: #AAAAAA;
+}
+
+.admin-nav ul {
+    list-style: none;
+    padding: var(--spacing-md) 0;
+}
+
+.admin-nav li a {
+    display: block;
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--color-light-gray);
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.admin-nav li a:hover, .admin-nav li a.active {
+    background-color: var(--color-primary-dark);
+    color: var(--color-background);
+}
+
+.logout-link {
+    margin-top: var(--spacing-md);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Main Content */
+.main-content {
+    flex-grow: 1;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background-color: var(--color-background);
+}
+
+.admin-header {
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-light-gray);
+    padding-bottom: var(--spacing-md);
+}
+
+/* Summary Cards */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.card {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card h3 {
+    margin-bottom: var(--spacing-xs);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.data-point {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1;
+}
+
+.card-red {
+    background-color: var(--color-primary);
+    color: var(--color-background);
+}
+.card-red h3 { color: var(--color-background); }
+
+.card-black {
+    background-color: var(--color-secondary);
+    color: var(--color-background);
+}
+.card-black h3 { color: var(--color-background); }
+
+.card-white {
+    background-color: var(--color-background);
+    color: var(--color-secondary);
+    border: 1px solid var(--color-light-gray);
+}
+.card-white .data-point { color: var(--color-primary); }
+
+/* Class Summary Table */
+.dashboard-table-section {
+    background-color: var(--color-light-gray);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+}
+
+.class-summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-md);
+    background-color: var(--color-background);
+}
+
+.class-summary-table th, .class-summary-table td {
+    padding: var(--spacing-sm);
+    text-align: left;
+    border-bottom: 1px solid var(--color-light-gray);
+}
+
+.class-summary-table th {
+    background-color: var(--color-secondary);
+    color: var(--color-background);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.btn-action {
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.btn-action.view {
+    background-color: var(--color-primary);
+    color: var(--color-background);
+    margin-right: 0.5rem;
+}
+
+.btn-action.view:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.btn-action.edit {
+    background-color: transparent;
+    color: var(--color-secondary);
+    border-color: var(--color-secondary);
+}
+
+.btn-action.edit:hover {
+    background-color: var(--color-light-gray);
+}
+
+.class-summary-table .full {
+    color: var(--color-primary-dark);
+    font-weight: 700;
+}
+
+/* Mobile Adjustments for Dashboard - Hiding Sidebar and table headers */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none; /* Hide sidebar on small screens */
+    }
+
+    .summary-cards {
+        grid-template-columns: 1fr; /* Stack cards vertically */
+    }
+
+    /* Convert table to stacked cards for mobile view */
+    .class-summary-table, .class-summary-table thead, .class-summary-table tbody, .class-summary-table th, .class-summary-table td, .class-summary-table tr {
+        display: block;
+    }
+
+    .class-summary-table thead tr {
+        position: absolute;
+        top: -9999px; /* Hide table headers */
+        left: -9999px;
+    }
+
+    .class-summary-table tr {
+        border: 1px solid var(--color-light-gray);
+        margin-bottom: var(--spacing-md);
+        display: block;
+        padding: var(--spacing-sm);
+    }
+
+    .class-summary-table td {
+        border: none;
+        position: relative;
+        padding-left: 50%; 
+        text-align: right;
+    }
+
+    .class-summary-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 700;
+        text-align: left;
+    }
+}
+/*
+ * APPEND TO: assets/css/admin.css
+ * ------------------------------------------------ */
+/* 10. FORM STYLES (Add/Edit Class & Client List) */
+/* ------------------------------------------------ */
+
+.class-management-form, .client-filter-form {
+    background-color: var(--color-background);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-light-gray);
+    border-radius: var(--radius-sm);
+}
+
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-secondary);
+}
+
+.form-group input:not([type="checkbox"]), 
+.form-group select, 
+.form-group textarea {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid #CCCCCC;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    box-sizing: border-box; /* Crucial for width: 100% to work with padding */
+}
+
+/* Grid layout for two-column inputs */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+}
+
+@media (min-width: 600px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Checkbox specific styling */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: var(--spacing-sm);
+    transform: scale(1.5); /* Make checkbox easier to click/see */
+}
+
+.checkbox-group label {
+    margin-bottom: 0;
+    font-weight: 400;
+}
+
+/* Submit Button */
+.btn-submit-class {
+    background-color: var(--color-primary);
+    color: var(--color-background);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 700;
+    width: 100%;
+    margin-top: var(--spacing-md);
+    transition: background-color 0.3s ease;
+}
+
+.btn-submit-class:hover {
+    background-color: var(--color-primary-dark);
+}
+/*
+ * APPEND TO: assets/css/admin.css
+ * ------------------------------------------------ */
+/* 11. CLIENT LIST SPECIFIC STYLES */
+/* ------------------------------------------------ */
+
+.client-filter-form {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.client-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-md);
+    background-color: var(--color-background);
+}
+
+.client-data-table th, .client-data-table td {
+    padding: var(--spacing-sm);
+    text-align: left;
+    border-bottom: 1px solid var(--color-light-gray);
+    font-size: 0.9rem;
+}
+
+.client-data-table th {
+    background-color: var(--color-secondary);
+    color: var(--color-background);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+/* Status Badges */
+.paid {
+    background-color: #D4EDDA; /* Light green */
+    color: #155724; /* Dark green */
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+}
+
+.pending {
+    background-color: #FFF3CD; /* Light yellow */
+    color: #856404; /* Dark yellow */
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+}
+
+/* Export Button Specific Style */
+.btn-action.export {
+    background-color: var(--color-secondary);
+    color: var(--color-background);
+    border-color: var(--color-secondary);
+}
+
+.btn-action.export:hover {
+    background-color: #444444;
+}
+
+
+/* Mobile Table Stacking (Reusing logic from dashboard table, adjusting content display) */
+@media (max-width: 768px) {
+    .client-data-table, .client-data-table thead, .client-data-table tbody, .client-data-table th, .client-data-table td, .client-data-table tr {
+        display: block;
+    }
+    
+    .client-data-table thead tr {
+        position: absolute;
+        top: -9999px; 
+        left: -9999px;
+    }
+    
+    .client-data-table tr {
+        border: 1px solid var(--color-light-gray);
+        margin-bottom: var(--spacing-md);
+        display: block;
+        padding: var(--spacing-sm);
+    }
+    
+    .client-data-table td {
+        border: none;
+        position: relative;
+        padding-left: 50%; 
+        text-align: right;
+    }
+    
+    .client-data-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 700;
+        text-align: left;
+    }
+
+    /* Adjusting grid for filter form on mobile */
+    .client-filter-section .form-grid {
+        grid-template-columns: 1fr;
+    }
+}

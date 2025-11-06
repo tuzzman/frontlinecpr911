@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FrontlineCPR911 | Schedule & Sign-Up for CPR/AED Classes</title>
+    
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="assets/js/script.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <a href="index.html"><h1>FrontlineCPR911</h1></a> 
+            </div>
+            <nav class="main-nav">
+                <button class="menu-toggle" aria-expanded="false">☰</button>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="classes.html" class="active">Upcoming Classes</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section class-schedule-section">
+        <div class="container">
+            <h1>Upcoming In-Person CPR & AED Training</h1>
+            <p class="intro-text">Select a class below to review details and secure your spot. All classes are taught by experienced Fire/EMS professionals following current AHA guidelines.</p>
+
+            <div id="class-list-container">
+                </div>
+            </div>
+    </section>
+
+    <hr>
+
+    <section class="section registration-section" id="registration-form" style="background-color: var(--color-light-gray);">
+        <div class="container">
+            <h2>Secure Your Spot & Submit Client Information</h2>
+            <p>Please provide the following details exactly as they should appear on your official **AHA Certification Card**.</p>
+            
+            <form action="/api/register" method="POST" class="registration-form">
+                
+                <div class="form-group">
+                    <label for="selected_class">Selected Course:</label>
+                    <input type="text" id="selected_class" name="selected_class_display" value="AHA Heartsaver - Nov 23" required readonly>
+                </div>
+
+                <input type="hidden" id="registration_class_id" name="classId" value="" required>
+
+                </form>
+                
+                <div class="form-group">
+                    <label for="full_name">**Full Name (As you want it on your card):**</label>
+                    <input type="text" id="full_name" name="full_name" placeholder="John Michael Doe" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="dob">Date of Birth:</label>
+                    <input type="date" id="dob" name="dob" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number (Optional):</label>
+                    <input type="tel" id="phone" name="phone" placeholder="(555) 555-5555">
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Mailing Address (Street, City, Zip):</label>
+                    <input type="text" id="address" name="address" placeholder="123 Example St, Anytown, 90210" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary submit-btn">
+                    Complete Registration & Proceed to Payment
+                </button>
+            </form>
+
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 FrontlineCPR911 Training. All rights reserved. | <a href="admin/dashboard.html">Admin Login</a></p>
+            <p>Training proudly based on Current AHA Guidelines.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
