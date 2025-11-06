@@ -31,13 +31,22 @@ jobs:
           ls -la
         shell: bash
 
-      - name: Deploy via git-ftp
-        uses: git-ftp/git-ftp-action@v1.6.0
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
-          url: ftp://${{ secrets.FTP_HOST }}/domains/frontlinecpr911.com/public_html
-          user: ${{ secrets.FTP_USERNAME }}
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          flags: --all --verbose
+          protocol: ftp
+          local-dir: ./
+          server-dir: /domains/frontlinecpr911.com/public_html
+          log-level: verbose
+          dangerous-clean-slate: true
+          exclude: |
+            **/.git**
+            **/node_modules/**
+            **/*.map
+            Github_key*
 
       - name: Verify public pages (HTTP)
         run: |
