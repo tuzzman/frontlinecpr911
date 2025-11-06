@@ -15,7 +15,7 @@
     <header>
         <div class="container header-content">
             <div class="logo">
-                <a href="index.html"><h1>FrontlineCPR911</h1></a> 
+                <a href="index.html"><h1>Frontline<span class="cpr">CPR</span>911</h1></a>
             </div>
             <nav class="main-nav">
                 <button class="menu-toggle" aria-expanded="false">☰</button>
@@ -26,6 +26,12 @@
                     <li><a href="contact.html">Contact</a></li>
                 </ul>
             </nav>
+        </div>
+        <div class="header-ekg-container">
+            <!-- EKG decorative SVG overlay (persistent with blue color) -->
+            <svg class="ekg-svg" viewBox="0 0 1000 56" preserveAspectRatio="none" aria-hidden="true">
+                <path class="ekg-path" d="M20 28 H120 L140 28 L150 8 L170 48 L190 28 H380 L420 28 L440 28 L460 12 L480 44 L500 28 H980" />
+            </svg>
         </div>
     </header>
 
@@ -47,16 +53,27 @@
             <p>Please provide the following details exactly as they should appear on your official **AHA Certification Card**.</p>
             
             <form action="/api/register" method="POST" class="registration-form">
-                
+
                 <div class="form-group">
-                    <label for="selected_class">Selected Course:</label>
-                    <input type="text" id="selected_class" name="selected_class_display" value="AHA Heartsaver - Nov 23" required readonly>
+                    <label>Selected Course:</label>
+                    <div class="radio-group">
+                        <label class="radio-inline">
+                            <input type="radio" name="selected_class_display" value="BLS Provider" data-class-id="bls" required>
+                            BLS Provider — $75
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="selected_class_display" value="Heartsaver CPR/AED" data-class-id="heartsaver" required checked>
+                            Heartsaver CPR/AED — $60
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="selected_class_display" value="First Aid + CPR" data-class-id="firstaid" required>
+                            First Aid + CPR — $85
+                        </label>
+                    </div>
                 </div>
 
-                <input type="hidden" id="registration_class_id" name="classId" value="" required>
+                <input type="hidden" id="registration_class_id" name="classId" value="heartsaver" required>
 
-                </form>
-                
                 <div class="form-group">
                     <label for="full_name">**Full Name (As you want it on your card):**</label>
                     <input type="text" id="full_name" name="full_name" placeholder="John Michael Doe" required>
@@ -96,6 +113,30 @@
             <p>Training proudly based on Current AHA Guidelines.</p>
         </div>
     </footer>
+
+    <script>
+        // Sync selected radio to hidden class ID for form submission
+        document.addEventListener('DOMContentLoaded', function () {
+            const radios = document.querySelectorAll('input[name="selected_class_display"]');
+            const hidden = document.getElementById('registration_class_id');
+            if (!radios.length || !hidden) return;
+            radios.forEach(r => r.addEventListener('change', function () {
+                hidden.value = this.dataset.classId || this.value;
+                // Update visual selected state (fallback for browsers without :has)
+                radios.forEach(rr => {
+                    const lab = rr.closest('label');
+                    if (lab) lab.classList.toggle('is-selected', rr.checked);
+                });
+            }));
+            // initialize hidden value and visual state based on checked radio
+            const checked = document.querySelector('input[name="selected_class_display"]:checked');
+            if (checked) hidden.value = checked.dataset.classId || checked.value;
+            radios.forEach(rr => {
+                const lab = rr.closest('label');
+                if (lab) lab.classList.toggle('is-selected', rr.checked);
+            });
+        });
+    </script>
 
 </body>
 </html>

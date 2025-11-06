@@ -13,7 +13,7 @@
     <header>
         <div class="container header-content">
             <div class="logo">
-                <a href="index.html"><h1>FrontlineCPR911</h1></a> 
+                <a href="index.html"><h1>Frontline<span class="cpr">CPR</span>911</h1></a>
             </div>
             <nav class="main-nav">
                 <button class="menu-toggle" aria-expanded="false">☰</button>
@@ -25,7 +25,14 @@
                 </ul>
             </nav>
         </div>
+        <div class="header-ekg-container">
+            <!-- EKG decorative SVG overlay (persistent with blue color) -->
+            <svg class="ekg-svg" viewBox="0 0 1000 56" preserveAspectRatio="none" aria-hidden="true">
+                <path class="ekg-path" d="M20 28 H120 L140 28 L150 8 L170 48 L190 28 H380 L420 28 L440 28 L460 12 L480 44 L500 28 H980" />
+            </svg>
+        </div>
     </header>
+    
 
     <section class="section contact-details-section">
         <div class="container">
@@ -94,5 +101,7 @@
         </div>
     </footer>
 
+    <!-- Site Scripts -->
+    <script src="assets/js/script.js"></script>
 </body>
 </html>

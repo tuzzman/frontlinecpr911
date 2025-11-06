@@ -1,12 +1,50 @@
 /**
  * FRONTLINECPR911 PUBLIC SITE JAVASCRIPT
- * (Includes Mobile Menu Logic from previous step)
  */
 
-const API_BASE_URL = 'https://frontlinecpr911.com/api'; // *** Set your backend URL here ***
+const API_BASE_URL = 'https://frontlinecpr911.com/api';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ... Existing Mobile Menu Toggle Logic ...
+    // Mobile Menu Toggle
+    const menuButton = document.querySelector('.menu-toggle');
+    const mainNav = document.querySelector('.main-nav ul');
+    
+    if (menuButton && mainNav) {
+        // Toggle using a class so CSS handles layout/animation
+        menuButton.addEventListener('click', () => {
+            const isOpen = mainNav.classList.toggle('open');
+            // small delay to allow CSS transition when opening
+            if (isOpen) {
+                // force reflow then add visible state
+                // eslint-disable-next-line no-unused-expressions
+                mainNav.offsetHeight;
+                mainNav.classList.add('show');
+            } else {
+                mainNav.classList.remove('show');
+            }
+            menuButton.setAttribute('aria-expanded', isOpen);
+        });
+    }
+
+    // Smooth Scroll for Anchor Links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                // Close mobile menu if open (mobile only)
+                if (mainNav && window.innerWidth < 768) {
+                    mainNav.classList.remove('show');
+                    mainNav.classList.remove('open');
+                    menuButton.setAttribute('aria-expanded', 'false');
+                }
+            }
+        });
+    });
 
     // ----------------------------------------------------
     // NEW: Class Loading & Rendering Logic
@@ -50,6 +88,89 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // Testimonials Carousel
+    const testimonialContainer = document.querySelector('.testimonials-container');
+    if (testimonialContainer) {
+        let currentTestimonial = 0;
+        const testimonials = testimonialContainer.querySelectorAll('.testimonial');
+        const totalTestimonials = testimonials.length;
+
+        // Create navigation dots
+        const dotsContainer = document.createElement('div');
+        dotsContainer.className = 'testimonial-dots';
+        testimonials.forEach((_, index) => {
+            const dot = document.createElement('button');
+            dot.className = `dot ${index === 0 ? 'active' : ''}`;
+            dot.setAttribute('aria-label', `Go to testimonial ${index + 1}`);
+            dot.addEventListener('click', () => showTestimonial(index));
+            dotsContainer.appendChild(dot);
+        });
+        testimonialContainer.appendChild(dotsContainer);
+
+        function showTestimonial(index) {
+            testimonials.forEach(t => t.style.opacity = '0');
+            setTimeout(() => {
+                testimonials.forEach(t => t.style.display = 'none');
+                testimonials[index].style.display = 'block';
+                setTimeout(() => {
+                    testimonials[index].style.opacity = '1';
+                }, 50);
+            }, 300);
+
+            // Update dots
+            dotsContainer.querySelectorAll('.dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+            currentTestimonial = index;
+        }
+
+        // Auto-rotate testimonials
+        setInterval(() => {
+            const nextTestimonial = (currentTestimonial + 1) % totalTestimonials;
+            showTestimonial(nextTestimonial);
+        }, 5000);
+    }
+
+    // Animated Trust Metrics
+    const trustMetrics = document.querySelectorAll('.trust-metric');
+    if (trustMetrics.length) {
+        const options = {
+            threshold: 0.5,
+            rootMargin: "0px"
+        };
+
+        const animateValue = (element, start, end, duration) => {
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const updateNumber = () => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    element.textContent = end.toLocaleString();
+                } else {
+                    element.textContent = Math.round(current).toLocaleString();
+                    requestAnimationFrame(updateNumber);
+                }
+            };
+            
+            requestAnimationFrame(updateNumber);
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const target = entry.target;
+                    const endValue = parseInt(target.getAttribute('data-value'), 10);
+                    animateValue(target.querySelector('.metric-value'), 0, endValue, 2000);
+                    observer.unobserve(target);
+                }
+            });
+        }, options);
+
+        trustMetrics.forEach(metric => observer.observe(metric));
+    }
+
     // Function to generate the HTML element for a single class
     function createClassCard(data) {
         const spotsLeft = data.maxCapacity - data.registrations;
@@ -102,6 +223,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('registration-form').scrollIntoView({ behavior: 'smooth' });
             });
         });
+    }
+
+    // Pricing Toggle (if exists)
+    const pricingToggle = document.querySelector('.pricing-toggle');
+    if (pricingToggle) {
+        const annualPrices = document.querySelectorAll('[data-annual-price]');
+        const monthlyPrices = document.querySelectorAll('[data-monthly-price]');
+        const toggleBtn = pricingToggle.querySelector('button');
+
+        toggleBtn.addEventListener('click', () => {
+            const isMonthly = toggleBtn.getAttribute('aria-pressed') === 'true';
+            toggleBtn.setAttribute('aria-pressed', !isMonthly);
+
+            annualPrices.forEach(price => {
+                price.style.display = isMonthly ? 'block' : 'none';
+            });
+            monthlyPrices.forEach(price => {
+                price.style.display = isMonthly ? 'none' : 'block';
+            });
+        });
+    }
+
+    // Intersection Observer for Fade-In Animation
+    const fadeElements = document.querySelectorAll('.fade-in');
+    if (fadeElements.length) {
+        const fadeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    fadeObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px'
+        });
+
+        fadeElements.forEach(element => fadeObserver.observe(element));
     }
 
     const registrationForm = document.querySelector('.registration-form');
