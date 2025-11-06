@@ -31,11 +31,13 @@ jobs:
           ls -la
         shell: bash
 
-      - name: Deploy via Git-FTP
-        uses: sebrot/git-ftp@v3.0.1
+      - name: Deploy via git-ftp
+        uses: git-ftp/git-ftp-action@v1.6.0
         with:
-          url: ftp://${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}@${{ secrets.FTP_HOST }}/domains/frontlinecpr911.com/public_html
-          options: --all --verbose
+          url: ftp://${{ secrets.FTP_HOST }}/domains/frontlinecpr911.com/public_html
+          user: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          flags: --all --verbose
 
       - name: Verify public pages (HTTP)
         run: |
