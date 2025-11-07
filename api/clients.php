@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/_common.php';
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$method = effective_method();
 
 if ($method === 'POST') {
     $body = read_json_body();
@@ -42,6 +42,51 @@ if ($method === 'POST') {
         $pdo->rollBack();
         json_response(500, [ 'success' => false, 'message' => 'Server error', 'error' => $e->getMessage() ]);
     }
+}
+
+if ($method === 'PUT') {
+    $pdo = pdo_or_503();
+    require_admin($pdo);
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    if ($id <= 0) json_response(400, [ 'success' => false, 'message' => 'Valid client id required' ]);
+    $body = read_json_body();
+    $first_name = trim($body['first_name'] ?? '');
+    $last_name = trim($body['last_name'] ?? '');
+    $email = trim($body['email'] ?? '');
+    $phone = trim($body['phone'] ?? '');
+    $dob = trim($body['dob'] ?? '');
+    $address = trim($body['address'] ?? '');
+    if ($first_name === '' || $last_name === '' || $email === '') {
+        json_response(400, [ 'success' => false, 'message' => 'Missing required fields' ]);
+    }
+    $stmt = $pdo->prepare("UPDATE clients SET first_name=:fn,last_name=:ln,email=:em,phone=:ph,dob=:dob,address=:addr WHERE id=:id");
+    $stmt->execute([
+        ':fn' => $first_name,
+        ':ln' => $last_name,
+        ':em' => $email,
+        ':ph' => $phone,
+        ':dob' => $dob ?: null,
+        ':addr' => $address ?: null,
+        ':id' => $id,
+    ]);
+    json_response(200, [ 'success' => true, 'id' => $id ]);
+}
+
+if ($method === 'DELETE') {
+    $pdo = pdo_or_503();
+    require_admin($pdo);
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    if ($id <= 0) json_response(400, [ 'success' => false, 'message' => 'Valid client id required' ]);
+    // Optional safety: check registrations
+    $r = $pdo->prepare('SELECT COUNT(*) AS cnt FROM registrations WHERE client_id = :cid');
+    $r->execute([':cid' => $id]);
+    $cnt = (int)$r->fetch()['cnt'];
+    if ($cnt > 0) {
+        json_response(409, [ 'success' => false, 'message' => 'Cannot delete; client has registrations (' . $cnt . ')' ]);
+    }
+    $del = $pdo->prepare('DELETE FROM clients WHERE id = :id');
+    $del->execute([':id' => $id]);
+    json_response(200, [ 'success' => true, 'deleted' => $id ]);
 }
 
 if ($method === 'GET') {

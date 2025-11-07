@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/_common.php';
 
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$method = effective_method();
 
 if ($method === 'POST') {
     $body = read_json_body();
@@ -65,6 +65,29 @@ if ($method === 'GET') {
     $stmt->execute($params);
     $rows = $stmt->fetchAll();
     json_response(200, [ 'success' => true, 'data' => $rows ]);
+}
+
+if ($method === 'PUT') {
+    $pdo = pdo_or_503();
+    require_admin($pdo);
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    if ($id <= 0) json_response(400, [ 'success' => false, 'message' => 'Valid id required' ]);
+    $body = read_json_body();
+    $status = trim($body['status'] ?? ''); // new/contacted/scheduled/closed
+    $notes = trim($body['notes'] ?? '');
+    if ($status !== '' && !in_array($status, ['new','contacted','scheduled','closed'], true)) {
+        json_response(400, [ 'success' => false, 'message' => 'Invalid status' ]);
+    }
+    $fields = [];
+    $params = [ ':id' => $id ];
+    if ($status !== '') { $fields[] = 'status = :st'; $params[':st'] = $status; }
+    if ($notes !== '')  { $fields[] = 'notes = :nt';  $params[':nt'] = $notes; }
+    if (!$fields) json_response(400, [ 'success' => false, 'message' => 'No changes provided' ]);
+    $fields[] = 'updated_at = NOW()';
+    $sql = 'UPDATE group_requests SET ' . implode(', ', $fields) . ' WHERE id = :id';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    json_response(200, [ 'success' => true, 'id' => $id ]);
 }
 
 json_response(405, [ 'success' => false, 'message' => 'Method Not Allowed' ]);
