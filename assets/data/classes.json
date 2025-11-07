@@ -1,0 +1,32 @@
+[
+  {
+    "_id": "cls_bls_2025_12_01",
+    "courseName": "BLS Provider",
+    "classDate": "2025-12-01T09:00:00-08:00",
+    "startTime": "9:00 AM",
+    "location": "Riverside Training Center",
+    "price": 75,
+    "maxCapacity": 12,
+    "registrations": 10
+  },
+  {
+    "_id": "cls_heartsaver_2025_12_05",
+    "courseName": "Heartsaver CPR/AED",
+    "classDate": "2025-12-05T18:00:00-08:00",
+    "startTime": "6:00 PM",
+    "location": "Moreno Valley Community Hall",
+    "price": 60,
+    "maxCapacity": 16,
+    "registrations": 16
+  },
+  {
+    "_id": "cls_firstaid_2025_12_10",
+    "courseName": "First Aid + CPR",
+    "classDate": "2025-12-10T13:00:00-08:00",
+    "startTime": "1:00 PM",
+    "location": "Riverside Training Center",
+    "price": 85,
+    "maxCapacity": 10,
+    "registrations": 3
+  }
+]

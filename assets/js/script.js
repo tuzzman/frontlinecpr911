@@ -63,33 +63,49 @@ document.addEventListener('DOMContentLoaded', () => {
             classListContainer.innerHTML = '<p class="intro-text">Loading schedule…</p>';
         }
         try {
-            const response = await fetch(`${API_BASE_URL}/classes`);
-            
-            if (!response.ok) {
-                throw new Error('Failed to fetch classes.');
-            }
-            
-            const classes = await response.json();
-            
-            if (classes.length === 0) {
-                classListContainer.innerHTML = '<p class="intro-text">No upcoming classes are scheduled at this time. Please check back soon!</p>';
-                return;
+            // Try primary API
+            let classes = await fetchJson(`${API_BASE_URL}/classes`);
+
+            // If API returns nothing or not an array, fall back
+            if (!Array.isArray(classes)) {
+                throw new Error('Unexpected API response shape');
             }
 
-            classListContainer.innerHTML = ''; // Clear the container
-            
-            classes.forEach(classData => {
-                const card = createClassCard(classData);
-                classListContainer.appendChild(card);
-            });
-            
-            // Re-attach the registration listeners after new cards are added
-            attachRegistrationListeners();
-
-        } catch (error) {
-            console.error("Error loading classes:", error);
-            classListContainer.innerHTML = '<p class="intro-text" style="color: var(--color-primary);">Error loading schedule. Please refresh the page.</p>';
+            renderClassList(classes);
+        } catch (apiError) {
+            console.warn('Primary API failed, attempting local fallback…', apiError);
+            try {
+                const fallback = await fetchJson('assets/data/classes.json');
+                renderClassList(Array.isArray(fallback) ? fallback : []);
+            } catch (fallbackError) {
+                console.error('Fallback load failed:', fallbackError);
+                classListContainer.innerHTML = '<p class="intro-text" style="color: var(--color-primary);">Error loading schedule. Please refresh the page.</p>';
+            }
         }
+    }
+
+    async function fetchJson(url) {
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status} for ${url}`);
+        }
+        return res.json();
+    }
+
+    function renderClassList(classes) {
+        if (!classes || classes.length === 0) {
+            classListContainer.innerHTML = '<p class="intro-text">No upcoming classes are scheduled at this time. Please check back soon!</p>';
+            return;
+        }
+
+        classListContainer.innerHTML = '';
+        classes.forEach(classData => {
+            const card = createClassCard(classData);
+            classListContainer.appendChild(card);
+        });
+
+        // Re-attach the registration listeners after new cards are added
+        attachRegistrationListeners();
     }
     
     // Testimonials Carousel
