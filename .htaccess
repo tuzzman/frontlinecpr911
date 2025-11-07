@@ -1,4 +1,11 @@
 # Static site defaults for Hostinger/Apache
+# Canonical host: force www to avoid split sessions/caching between apex and www
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Redirect apex domain to www (preserve path and query)
+  RewriteCond %{HTTP_HOST} ^frontlinecpr911\.com$ [NC]
+  RewriteRule ^ https://www.frontlinecpr911.com%{REQUEST_URI} [L,R=301]
+</IfModule>
 # Prevent content negotiation from interfering with .html resolution
 <IfModule mod_negotiation.c>
   Options -MultiViews
