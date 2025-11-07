@@ -467,6 +467,10 @@ body {
 @media (max-width: 600px){
     .admin-modal-content { padding: 1rem; }
 }
+/* Button loading state and spinner */
+.btn-action.btn-loading, .btn-submit-class.btn-loading { opacity: 0.85; pointer-events: none; position: relative; }
+.btn-action.btn-loading::after, .btn-submit-class.btn-loading::after { content: ""; display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.9); border-right-color: transparent; border-radius: 50%; margin-left: .5rem; vertical-align: -2px; animation: admin-spin .8s linear infinite; }
+@keyframes admin-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 /*
  * APPEND TO: assets/css/admin.css
  * ------------------------------------------------ */
@@ -575,3 +579,4 @@ body {
 .toast { background: #222; color: #fff; padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); box-shadow: 0 3px 12px rgba(0,0,0,0.25); font-size: 0.9rem; opacity: 0.95; }
 .toast.success { background: #155724; }
 .toast.error { background: #721c24; }
+.toast.warn { background: #856404; }

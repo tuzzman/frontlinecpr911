@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const btn = loginForm.querySelector('.login-button');
-            btn.disabled = true;
+            btn.disabled = true; btn.classList.add('btn-loading');
             const original = btn.textContent;
             btn.textContent = 'Logging in...';
             try {
@@ -81,8 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!res.ok || !result.success) throw new Error(result.message || 'Login failed');
                 window.location.href = 'dashboard.html';
             } catch (err) {
-                alert(err.message);
-                btn.disabled = false;
+                showToast(err.message, 'error');
+                btn.disabled = false; btn.classList.remove('btn-loading');
                 btn.textContent = original;
             }
         });
@@ -108,7 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderRows(json.data || []);
             } catch (err) {
                 console.error(err);
-                grTableBody.innerHTML = '<tr><td colspan="8">Error loading data.</td></tr>';
+                grTableBody.innerHTML = '<tr><td colspan="10">Error loading data.</td></tr>';
+                showToast('Error loading group requests','error');
             }
         }
 
@@ -186,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async function saveGroupRequest(id, status, notes, tr, btn){
             if(!id) return;
-            const original = btn.textContent; btn.disabled=true; btn.textContent='Saving...';
+            const original = btn.textContent; btn.disabled=true; btn.textContent='Saving...'; btn.classList.add('btn-loading');
             try {
                 let res = await fetch(`${API_BASE_URL}/group_request.php?id=${encodeURIComponent(id)}`, {
                     method:'PUT', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
@@ -207,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 data.status = status; data.notes = notes;
                 tr.setAttribute('data-json', JSON.stringify(data).replace(/'/g,'&#39;'));
                 showToast('Saved', 'success');
-            } catch(err){ showToast(err.message,'error'); } finally { btn.disabled=false; btn.textContent=original; }
+            } catch(err){ showToast(err.message,'error'); } finally { btn.disabled=false; btn.textContent=original; btn.classList.remove('btn-loading'); }
         }
 
         document.getElementById('gr-filter-form')?.addEventListener('submit', (e) => {
@@ -275,9 +276,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </tr>
                 `).join('');
                 attachClientEditButtons();
+                applyClientSearchFilter?.();
             } catch (e) {
                 console.error(e);
                 clientsTbody.innerHTML = '<tr><td colspan="8">Error loading roster.</td></tr>';
+                showToast('Error loading roster','error');
             }
         }
 
@@ -289,16 +292,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('export-roster-pdf')?.addEventListener('click', () => {
             const id = classSelect.value;
-            if (!id) return alert('Select a class first');
+            if (!id) return showToast('Select a class first','warn');
             window.location.href = `${API_BASE_URL}/export.php?type=roster&classId=${encodeURIComponent(id)}`;
         });
         document.getElementById('export-roster-csv')?.addEventListener('click', () => {
             const id = classSelect.value;
-            if (!id) return alert('Select a class first');
+            if (!id) return showToast('Select a class first','warn');
             window.location.href = `${API_BASE_URL}/export.php?type=roster&classId=${encodeURIComponent(id)}&format=csv`;
         });
 
         loadClassesForFilter();
+        // Quick search filter
+        const searchInput = document.getElementById('clients-search');
+        function applyClientSearchFilter(){
+            if(!searchInput) return;
+            const q = searchInput.value.trim().toLowerCase();
+            const rows = Array.from(clientsTbody.querySelectorAll('tr'));
+            let visible = 0;
+            rows.forEach(tr => {
+                const id = tr.getAttribute('data-client-id');
+                if(!id){ tr.style.display=''; return; }
+                const text = tr.innerText.toLowerCase();
+                const match = !q || text.includes(q);
+                tr.style.display = match ? '' : 'none';
+                if(match) visible++;
+            });
+            const existingEmpty = clientsTbody.querySelector('.no-results-row');
+            if(visible===0){
+                if(!existingEmpty){
+                    const tr = document.createElement('tr');
+                    tr.className = 'no-results-row';
+                    tr.innerHTML = '<td colspan="8">No matching clients.</td>';
+                    clientsTbody.appendChild(tr);
+                }
+            } else {
+                existingEmpty?.remove();
+            }
+        }
+        let searchTimer;
+        searchInput?.addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(applyClientSearchFilter, 150);
+        });
         // Client edit modal logic
         const clientModal = document.getElementById('edit-client-modal');
         const clientEditForm = document.getElementById('client-edit-form');
@@ -336,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const address = document.getElementById('client-address').value.trim();
             const payment_status = document.getElementById('client-status').value;
             const btn = document.getElementById('client-save-btn');
-            const original = btn.textContent; btn.disabled=true; btn.textContent='Saving...';
+            const original = btn.textContent; btn.disabled=true; btn.textContent='Saving...'; btn.classList.add('btn-loading');
             try {
                 let res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}`, {
                     method:'PUT', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
@@ -353,12 +388,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeClientModal();
                 if(classSelect.value) loadRoster(classSelect.value);
                 showToast('Client updated','success');
-            } catch(err){ showToast(err.message,'error'); } finally { btn.disabled=false; btn.textContent=original; }
+            } catch(err){ showToast(err.message,'error'); } finally { btn.disabled=false; btn.textContent=original; btn.classList.remove('btn-loading'); }
         });
         clientDeleteBtn?.addEventListener('click', async () => {
             const id = document.getElementById('client-edit-id').value;
             if(!id) return; if(!confirm('Delete this client?')) return;
-            clientDeleteBtn.disabled=true;
+            clientDeleteBtn.disabled=true; clientDeleteBtn.classList.add('btn-loading');
             try {
                 let res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}`, { method:'DELETE', credentials:'same-origin' });
                 if(!res.ok && (res.status===405 || res.status===400 || res.status===500)){
@@ -369,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeClientModal();
                 if(classSelect.value) loadRoster(classSelect.value); else loadClassesForFilter();
                 showToast('Client deleted','success');
-            } catch(err){ showToast(err.message,'error'); } finally { clientDeleteBtn.disabled=false; }
+            } catch(err){ showToast(err.message,'error'); } finally { clientDeleteBtn.disabled=false; clientDeleteBtn.classList.remove('btn-loading'); }
         });
     }
 
@@ -418,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const notes = document.getElementById('cc-notes').value;
             const btn = classCreateForm.querySelector('button[type="submit"]');
             const original = btn.textContent;
-            btn.disabled = true; btn.textContent = 'Saving...';
+            btn.disabled = true; btn.textContent = 'Saving...'; btn.classList.add('btn-loading');
             try {
                 const res = await fetch(`${API_BASE_URL}/classes.php`, {
                     method: 'POST',
@@ -430,10 +465,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!res.ok || !json.success) throw new Error(json.message || 'Failed to create class');
                 classCreateForm.reset();
                 loadClasses();
+                showToast('Class created','success');
             } catch (e) {
-                alert(e.message);
+                showToast(e.message,'error');
             } finally {
-                btn.disabled = false; btn.textContent = original;
+                btn.disabled = false; btn.textContent = original; btn.classList.remove('btn-loading');
             }
         });
 
@@ -489,7 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const notes = document.getElementById('edit-notes').value;
             const btn = document.getElementById('edit-save-btn');
             const original = btn.textContent;
-            btn.disabled = true; btn.textContent = 'Saving...';
+            btn.disabled = true; btn.textContent = 'Saving...'; btn.classList.add('btn-loading');
             try {
                 let res = await fetch(`${API_BASE_URL}/classes.php?id=${encodeURIComponent(id)}`, {
                     method: 'PUT',
@@ -511,13 +547,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeModal();
                 loadClasses();
                 showToast('Class updated','success');
-            } catch(err){ alert(err.message); } finally { btn.disabled = false; btn.textContent = original; }
+            } catch(err){ showToast(err.message,'error'); } finally { btn.disabled = false; btn.textContent = original; btn.classList.remove('btn-loading'); }
         });
         deleteBtn?.addEventListener('click', async () => {
             const id = document.getElementById('edit-id').value;
             if(!id) return;
             if(!confirm('Delete this class? This cannot be undone.')) return;
-            deleteBtn.disabled = true;
+            deleteBtn.disabled = true; deleteBtn.classList.add('btn-loading');
             try {
                 let res = await fetch(`${API_BASE_URL}/classes.php?id=${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'same-origin' });
                 if (!res.ok && (res.status === 405 || res.status === 400 || res.status === 500)) {
@@ -530,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeModal();
                 loadClasses();
                 showToast('Class deleted','success');
-            } catch(err){ alert(err.message); } finally { deleteBtn.disabled = false; }
+            } catch(err){ showToast(err.message,'error'); } finally { deleteBtn.disabled = false; deleteBtn.classList.remove('btn-loading'); }
         });
     }
 });
