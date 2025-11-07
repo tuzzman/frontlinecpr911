@@ -58,6 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to load data and render class cards
     async function loadUpcomingClasses() {
+        // Show loading state
+        if (classListContainer) {
+            classListContainer.innerHTML = '<p class="intro-text">Loading schedule…</p>';
+        }
         try {
             const response = await fetch(`${API_BASE_URL}/classes`);
             
@@ -217,7 +221,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const classDateText = classDateElement ? classDateElement.textContent.match(/📅 Date: ([^<]+)/)[1].trim() : '';
 
                 // Set the value in the hidden inputs on the registration form
-                selectedClassInput.value = `${courseName} - ${classDateText}`;
+                if (selectedClassInput) {
+                    selectedClassInput.value = `${courseName} - ${classDateText}`;
+                }
                 document.getElementById('registration_class_id').value = classId; // NEW HIDDEN FIELD
                 
                 document.getElementById('registration-form').scrollIntoView({ behavior: 'smooth' });

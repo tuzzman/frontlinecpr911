@@ -42,7 +42,8 @@
             <p class="intro-text">Select a class below to review details and secure your spot. All classes are taught by experienced Fire/EMS professionals following current AHA guidelines.</p>
 
             <div id="class-list-container">
-                </div>
+                <p class="intro-text">Loading schedule…</p>
+            </div>
             </div>
     </section>
 
@@ -74,6 +75,8 @@
                 </div>
 
                 <input type="hidden" id="registration_class_id" name="classId" value="heartsaver" required>
+                <!-- Populated when clicking Register on a class card (readable course + date) -->
+                <input type="hidden" id="selected_class" name="selected_class" value="">
 
                 <div class="form-group">
                     <label for="full_name">**Full Name (As you want it on your card):**</label>
