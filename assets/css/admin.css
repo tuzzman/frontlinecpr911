@@ -531,6 +531,34 @@ body.admin-compact .btn-submit-class {
 @media (min-width: 900px){
     body.admin-compact .form-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* =============================
+    ULTRA DENSE MODE
+    Even tighter spacing for power users. Apply via body.admin-ultra
+    ============================= */
+body.admin-ultra .main-content { padding: 0.6rem var(--spacing-md) !important; }
+body.admin-ultra .admin-header { margin-bottom: 0.6rem; padding-bottom: 0.35rem; }
+body.admin-ultra .summary-cards { gap: 0.5rem; margin-bottom: 0.6rem; }
+body.admin-ultra .dashboard-table-section { padding: 0.5rem; }
+body.admin-ultra .class-summary-table, body.admin-ultra .client-data-table { margin-top: 0.4rem; }
+body.admin-ultra .form-grid { gap: 0.55rem; }
+body.admin-ultra .form-group { margin-bottom: 0.4rem; }
+body.admin-ultra .form-group label { margin-bottom: 0.15rem; font-size: 0.8rem; }
+body.admin-ultra .form-group input:not([type="checkbox"]),
+body.admin-ultra .form-group select,
+body.admin-ultra .form-group textarea { padding: 0.3rem 0.45rem; font-size: 0.85rem; line-height: 1.1; border-radius: 2px; }
+body.admin-ultra .btn-action, body.admin-ultra .btn-submit-class { padding: 0.3rem 0.5rem; font-size: 0.85rem; }
+body.admin-ultra .class-summary-table th,
+body.admin-ultra .class-summary-table td,
+body.admin-ultra .client-data-table th,
+body.admin-ultra .client-data-table td { padding: 0.3rem 0.4rem; }
+/* Slightly smaller title and metrics for ultra */
+body.admin-ultra .main-content h1 { font-size: 1.35rem; }
+body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
+/* Wider grids at larger breakpoints */
+@media (min-width: 900px){ body.admin-ultra .form-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1200px){ body.admin-ultra .form-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 768px){ body.admin-ultra .main-content { padding: 0.6rem !important; } }
 /*
  * APPEND TO: assets/css/admin.css
  * ------------------------------------------------ */
