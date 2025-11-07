@@ -31,14 +31,43 @@ jobs:
           ls -la
         shell: bash
 
-      - name: Deploy via SFTP
+      - name: Connectivity check (FTPS)
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y lftp
+          echo "Attempting FTPS connection to ${{ secrets.FTP_HOST }}..."
+          lftp -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "${{ secrets.FTP_HOST }}" -e "set ssl:verify-certificate no; set ftp:passive-mode true; set ftp:ssl-allow true; set ftp:ssl-force true; cd /domains/frontlinecpr911.com/public_html; pwd; bye" || true
+        shell: bash
+
+      - name: Deploy via FTPS
+        id: deploy_ftps
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: sftp
-          port: 22
+          protocol: ftps
+          port: 21
+          local-dir: ./
+          server-dir: /domains/frontlinecpr911.com/public_html/
+          log-level: verbose
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git**
+            **/node_modules/**
+            **/*.map
+            Github_key*
+
+      - name: Deploy via FTP (fallback)
+        if: steps.deploy_ftps.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
           local-dir: ./
           server-dir: /domains/frontlinecpr911.com/public_html/
           log-level: verbose
@@ -69,11 +98,12 @@ jobs:
           done
         shell: bash
 
-      - name: List remote directory (SFTP)
+      - name: List remote directory (FTP/FTPS)
         run: |
           set -e
           sudo apt-get update
           sudo apt-get install -y lftp
-          echo "Listing remote /domains/frontlinecpr911.com/public_html via SFTP"
-          lftp -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "sftp://${{ secrets.FTP_HOST }}:22" -e "cd /domains/frontlinecpr911.com/public_html; cls -l; bye"
+          echo "Listing remote /domains/frontlinecpr911.com/public_html via FTPS (falling back to FTP if needed)"
+          lftp -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "${{ secrets.FTP_HOST }}" -e "set ssl:verify-certificate no; set ftp:passive-mode true; set ftp:ssl-allow true; set ftp:ssl-force true; cd /domains/frontlinecpr911.com/public_html; cls -l; bye" || \
+          lftp -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "${{ secrets.FTP_HOST }}" -e "set ftp:passive-mode true; cd /domains/frontlinecpr911.com/public_html; cls -l; bye"
         shell: bash
