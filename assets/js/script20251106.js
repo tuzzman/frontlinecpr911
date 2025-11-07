@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 console.warn('API unavailable, falling back to email', err);
-                // Fallback: open mailto with prefilled body
+                // Fallback: open mailto with prefilled body and show success banner
                 const lines = [
                     'Group Training Request',
                     '',
@@ -249,6 +249,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     `Notes: ${groupRequestForm.notes.value || ''}`,
                 ];
                 const mailto = `mailto:frontlinecpr911@gmail.com?subject=${encodeURIComponent('Group Training Request')}&body=${encodeURIComponent(lines.join('\n'))}`;
+
+                // Show banner so the user gets immediate confirmation even if the mail app opens in background
+                if (banner) {
+                    banner.className = 'alert success';
+                    // Provide a clickable link in case the email client doesn't auto-open
+                    banner.innerHTML = 'We\'ve prepared your request in your email client. If it didn\'t open, <a href="' + mailto + '">click here to open your email</a>.';
+                    banner.classList.remove('hidden');
+                    banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+
+                // Attempt to open the mail client
                 window.location.href = mailto;
             } finally {
                 submitBtn.textContent = original;
