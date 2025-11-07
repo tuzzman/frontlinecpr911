@@ -173,6 +173,28 @@
           </form>
         </div>
       </div>
+      
+      <!-- QR Modal -->
+      <div id="qr-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
+        <div class="admin-modal-content">
+          <h2 id="qrModalTitle">Class Check-In QR</h2>
+          <div id="qr-meta" style="margin-bottom: .75rem; font-size:.95rem; opacity:.85;"></div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:.75rem;">
+            <img id="qr-img" src="" alt="QR code for class check-in" style="width:256px;height:256px;border:1px solid #eee;border-radius:6px;" />
+            <div style="width:100%;">
+              <label for="qr-link" style="display:block; font-weight:700; margin-bottom:.25rem;">Check-In Link</label>
+              <div style="display:flex; gap:.5rem; align-items:center;">
+                <input id="qr-link" type="text" readonly style="flex:1; padding:.5rem; border:1px solid #ccc; border-radius:4px;" />
+                <button type="button" id="qr-copy-btn" class="btn-action view">Copy</button>
+              </div>
+            </div>
+            <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.5rem;">
+              <a id="qr-download" href="#" download class="btn-action export">Download PNG</a>
+              <button type="button" id="qr-close-btn" class="btn-action edit">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 

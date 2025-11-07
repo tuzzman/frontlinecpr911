@@ -506,10 +506,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td data-label="Location">${c.location || ''}</td>
                         <td data-label="Price">${c.price ?? ''}</td>
                         <td data-label="Capacity">${c.max_capacity ?? ''}</td>
-                        <td data-label="Actions"><button class="btn-action edit js-edit-class" type="button">Edit</button></td>
+                                                <td data-label="Actions">
+                                                    <div style="display:flex; gap:.4rem; flex-wrap:wrap;">
+                                                        <button class="btn-action edit js-edit-class" type="button">Edit</button>
+                                                        <button class="btn-action view js-qr-class" type="button" aria-label="Show QR for class ${c.id}">QR</button>
+                                                    </div>
+                                                </td>
                     </tr>
                 `).join('');
                 attachEditButtons();
+                                attachQrButtons();
             } catch (e) {
                 console.error(e);
                 classesTbody.innerHTML = '<tr><td colspan="7">Error loading classes.</td></tr>';
@@ -588,6 +594,56 @@ document.addEventListener('DOMContentLoaded', () => {
                         const raw = tr.getAttribute('data-json');
                         const data = JSON.parse(raw.replace(/&#39;/g,'"'));
                         openModal(data);
+                    } catch(err){ console.error('Parse class row failed', err); }
+                });
+            });
+        }
+        // --- QR Modal Logic ---
+        const qrModal = document.getElementById('qr-modal');
+        const qrImg = document.getElementById('qr-img');
+        const qrLinkInput = document.getElementById('qr-link');
+        const qrMeta = document.getElementById('qr-meta');
+        const qrCopyBtn = document.getElementById('qr-copy-btn');
+        const qrDownload = document.getElementById('qr-download');
+        const qrCloseBtn = document.getElementById('qr-close-btn');
+        let lastQrTrigger = null;
+        function openQrModal(data){
+            if(!qrModal) return;
+            lastQrTrigger = document.activeElement;
+            const base = location.origin; // if deployed behind domain includes schema + host
+            const link = `${base}/class_checkin.html?class=${data.id}`;
+            qrLinkInput.value = link;
+            // QuickChart QR API
+            const encoded = encodeURIComponent(link);
+            const qrUrl = `https://quickchart.io/qr?text=${encoded}&size=512&margin=1`; // high-res
+            qrImg.src = qrUrl;
+            qrImg.alt = `QR code for class ${data.id}`;
+            const dt = data.start_datetime ? new Date(data.start_datetime.replace(' ', 'T')) : null;
+            const dtLabel = dt ? dt.toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : 'Unscheduled';
+            qrMeta.innerHTML = `<strong>${data.course_type || 'Class'}</strong><br>${dtLabel}<br>${data.location || ''}`;
+            qrDownload.href = qrUrl;
+            qrModal.classList.remove('hidden');
+            qrCopyBtn.focus();
+        }
+        function closeQrModal(){ qrModal?.classList.add('hidden'); lastQrTrigger?.focus?.(); }
+        qrCloseBtn?.addEventListener('click', closeQrModal);
+        qrModal?.addEventListener('click', (e)=>{ if(e.target===qrModal) closeQrModal(); });
+        document.addEventListener('keydown', (e)=>{ if(!qrModal?.classList.contains('hidden') && e.key==='Escape') closeQrModal(); });
+        qrCopyBtn?.addEventListener('click', () => {
+            if(!qrLinkInput) return;
+            qrLinkInput.select();
+            try { document.execCommand('copy'); showToast('Link copied','success'); } catch(_){ navigator.clipboard?.writeText(qrLinkInput.value).then(()=>showToast('Link copied','success')).catch(()=>showToast('Copy failed','error')); }
+            qrLinkInput.setSelectionRange(0,0);
+        });
+        function attachQrButtons(){
+            classesTbody.querySelectorAll('.js-qr-class').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tr = btn.closest('tr');
+                    if(!tr) return;
+                    try {
+                        const raw = tr.getAttribute('data-json');
+                        const data = JSON.parse(raw.replace(/&#39;/g,'"'));
+                        openQrModal(data);
                     } catch(err){ console.error('Parse class row failed', err); }
                 });
             });
