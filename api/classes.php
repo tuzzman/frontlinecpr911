@@ -4,10 +4,31 @@ $pdo = pdo_or_503();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'GET') {
-    // Admin-only listing for now (can be public later if needed)
+    // Admin-only listing for now (could add a public subset later)
     require_admin($pdo);
     $stmt = $pdo->query('SELECT id, course_type, start_datetime, location, price, max_capacity, notes, created_at FROM classes ORDER BY start_datetime DESC');
-    json_response(200, [ 'success' => true, 'data' => $stmt->fetchAll() ]);
+    $rows = $stmt->fetchAll();
+    // Attach registration counts & remaining capacity
+    if ($rows) {
+        $ids = array_column($rows, 'id');
+        if ($ids) {
+            $in = implode(',', array_map('intval', $ids));
+            $rStmt = $pdo->query("SELECT class_id, COUNT(*) AS registrations FROM registrations WHERE class_id IN ($in) GROUP BY class_id");
+            $counts = [];
+            foreach ($rStmt->fetchAll() as $r) {
+                $counts[(int)$r['class_id']] = (int)$r['registrations'];
+            }
+            foreach ($rows as &$c) {
+                $cid = (int)$c['id'];
+                $reg = $counts[$cid] ?? 0;
+                $c['registrations'] = $reg;
+                $maxCap = isset($c['max_capacity']) ? (int)$c['max_capacity'] : null;
+                $c['spots_left'] = $maxCap !== null ? max($maxCap - $reg, 0) : null;
+            }
+            unset($c);
+        }
+    }
+    json_response(200, [ 'success' => true, 'data' => $rows ]);
 }
 
 if ($method === 'POST') {
@@ -33,7 +54,58 @@ if ($method === 'POST') {
         ':mc' => $max_capacity,
         ':nt' => $notes ?: null,
     ]);
-    json_response(200, [ 'success' => true, 'id' => $pdo->lastInsertId() ]);
+    $newId = $pdo->lastInsertId();
+    json_response(200, [ 'success' => true, 'id' => $newId ]);
+}
+
+if ($method === 'PUT') {
+    require_admin($pdo);
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    if ($id <= 0) json_response(400, [ 'success' => false, 'message' => 'Valid id required' ]);
+    $body = read_json_body();
+    $course_type = trim($body['course_type'] ?? '');
+    $start_datetime = trim($body['start_datetime'] ?? '');
+    $location = trim($body['location'] ?? '');
+    $price = isset($body['price']) && $body['price'] !== '' ? (float)$body['price'] : null;
+    $max_capacity = isset($body['max_capacity']) && $body['max_capacity'] !== '' ? (int)$body['max_capacity'] : null;
+    $notes = trim($body['notes'] ?? '');
+    if ($course_type === '') json_response(400, [ 'success' => false, 'message' => 'course_type required' ]);
+    // Optional: Prevent lowering capacity below current registrations
+    if ($max_capacity !== null) {
+        $capStmt = $pdo->prepare('SELECT COUNT(*) AS reg_count FROM registrations WHERE class_id = :cid');
+        $capStmt->execute([':cid' => $id]);
+        $regCount = (int)$capStmt->fetch()['reg_count'];
+        if ($regCount > $max_capacity) {
+            json_response(409, [ 'success' => false, 'message' => 'Cannot set capacity below existing registrations (' . $regCount . ')' ]);
+        }
+    }
+    $stmt = $pdo->prepare('UPDATE classes SET course_type = :ct, start_datetime = :sd, location = :loc, price = :pr, max_capacity = :mc, notes = :nt WHERE id = :id');
+    $stmt->execute([
+        ':ct' => $course_type,
+        ':sd' => $start_datetime ?: null,
+        ':loc' => $location ?: null,
+        ':pr' => $price,
+        ':mc' => $max_capacity,
+        ':nt' => $notes ?: null,
+        ':id' => $id,
+    ]);
+    json_response(200, [ 'success' => true, 'id' => $id ]);
+}
+
+if ($method === 'DELETE') {
+    require_admin($pdo);
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    if ($id <= 0) json_response(400, [ 'success' => false, 'message' => 'Valid id required' ]);
+    // Prevent delete if registrations exist
+    $rStmt = $pdo->prepare('SELECT COUNT(*) AS reg_count FROM registrations WHERE class_id = :cid');
+    $rStmt->execute([':cid' => $id]);
+    $regCount = (int)$rStmt->fetch()['reg_count'];
+    if ($regCount > 0) {
+        json_response(409, [ 'success' => false, 'message' => 'Cannot delete; ' . $regCount . ' registrations exist.' ]);
+    }
+    $del = $pdo->prepare('DELETE FROM classes WHERE id = :id');
+    $del->execute([':id' => $id]);
+    json_response(200, [ 'success' => true, 'deleted' => $id ]);
 }
 
 json_response(405, [ 'success' => false, 'message' => 'Method Not Allowed' ]);

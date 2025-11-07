@@ -117,6 +117,7 @@
               <th>Location</th>
               <th>Price</th>
               <th>Capacity</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="classes-tbody">
@@ -124,6 +125,54 @@
           </tbody>
         </table>
       </section>
+      <!-- Edit Class Modal -->
+      <div id="edit-class-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="editClassTitle">
+        <div class="admin-modal-content">
+          <h2 id="editClassTitle">Edit Class</h2>
+          <form id="class-edit-form">
+            <input type="hidden" id="edit-id" />
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="edit-course">Course Type</label>
+                <select id="edit-course" required>
+                  <option value="BLS Provider">BLS Provider</option>
+                  <option value="Heartsaver CPR/AED">Heartsaver CPR/AED</option>
+                  <option value="First Aid + CPR">First Aid + CPR</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="edit-date">Date</label>
+                <input type="date" id="edit-date" />
+              </div>
+              <div class="form-group">
+                <label for="edit-time">Start Time</label>
+                <input type="time" id="edit-time" />
+              </div>
+              <div class="form-group">
+                <label for="edit-location">Location</label>
+                <input type="text" id="edit-location" />
+              </div>
+              <div class="form-group">
+                <label for="edit-price">Price</label>
+                <input type="number" step="0.01" id="edit-price" />
+              </div>
+              <div class="form-group">
+                <label for="edit-capacity">Max Capacity</label>
+                <input type="number" id="edit-capacity" />
+              </div>
+              <div class="form-group" style="grid-column:1 / -1;">
+                <label for="edit-notes">Notes</label>
+                <textarea id="edit-notes" rows="3"></textarea>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.75rem; margin-top:1rem; flex-wrap:wrap;">
+              <button type="submit" class="btn-action view" id="edit-save-btn">Save</button>
+              <button type="button" class="btn-action edit" id="edit-cancel-btn">Cancel</button>
+              <button type="button" class="btn-action export" id="edit-delete-btn">Delete</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </main>
   </div>
 

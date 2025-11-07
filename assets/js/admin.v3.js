@@ -218,22 +218,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load classes');
                 const rows = json.data || [];
                 if (!rows.length) {
-                    classesTbody.innerHTML = '<tr><td colspan="6">No classes yet.</td></tr>';
+                    classesTbody.innerHTML = '<tr><td colspan="7">No classes yet.</td></tr>';
                     return;
                 }
                 classesTbody.innerHTML = rows.map(c => `
-                    <tr>
+                    <tr data-class-id="${c.id}" data-json='${JSON.stringify(c).replace(/'/g,"&#39;")}'>
                         <td data-label="ID">${c.id}</td>
                         <td data-label="Course">${c.course_type}</td>
                         <td data-label="Date/Time">${c.start_datetime || ''}</td>
                         <td data-label="Location">${c.location || ''}</td>
                         <td data-label="Price">${c.price ?? ''}</td>
                         <td data-label="Capacity">${c.max_capacity ?? ''}</td>
+                        <td data-label="Actions"><button class="btn-action edit js-edit-class" type="button">Edit</button></td>
                     </tr>
                 `).join('');
+                attachEditButtons();
             } catch (e) {
                 console.error(e);
-                classesTbody.innerHTML = '<tr><td colspan="6">Error loading classes.</td></tr>';
+                classesTbody.innerHTML = '<tr><td colspan="7">Error loading classes.</td></tr>';
             }
         }
 
@@ -269,5 +271,83 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         loadClasses();
+        // --- Edit Modal Logic ---
+        const modal = document.getElementById('edit-class-modal');
+        const editForm = document.getElementById('class-edit-form');
+        const cancelBtn = document.getElementById('edit-cancel-btn');
+        const deleteBtn = document.getElementById('edit-delete-btn');
+        function openModal(data){
+            if(!modal) return;
+            modal.classList.remove('hidden');
+            document.getElementById('edit-id').value = data.id;
+            document.getElementById('edit-course').value = data.course_type || '';
+            if(data.start_datetime){
+                const [d,t] = data.start_datetime.split(' ');
+                document.getElementById('edit-date').value = d;
+                document.getElementById('edit-time').value = t?.slice(0,5) || '';
+            } else {
+                document.getElementById('edit-date').value = '';
+                document.getElementById('edit-time').value = '';
+            }
+            document.getElementById('edit-location').value = data.location || '';
+            document.getElementById('edit-price').value = data.price ?? '';
+            document.getElementById('edit-capacity').value = data.max_capacity ?? '';
+            document.getElementById('edit-notes').value = data.notes || '';
+        }
+        function closeModal(){ modal?.classList.add('hidden'); }
+        cancelBtn?.addEventListener('click', closeModal);
+        function attachEditButtons(){
+            classesTbody.querySelectorAll('.js-edit-class').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tr = btn.closest('tr');
+                    if(!tr) return;
+                    try {
+                        const raw = tr.getAttribute('data-json');
+                        const data = JSON.parse(raw.replace(/&#39;/g,'"'));
+                        openModal(data);
+                    } catch(err){ console.error('Parse class row failed', err); }
+                });
+            });
+        }
+        editForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const course_type = document.getElementById('edit-course').value;
+            const date = document.getElementById('edit-date').value;
+            const time = document.getElementById('edit-time').value;
+            const start_datetime = (date && time) ? `${date} ${time}:00` : '';
+            const location = document.getElementById('edit-location').value;
+            const price = document.getElementById('edit-price').value;
+            const max_capacity = document.getElementById('edit-capacity').value;
+            const notes = document.getElementById('edit-notes').value;
+            const btn = document.getElementById('edit-save-btn');
+            const original = btn.textContent;
+            btn.disabled = true; btn.textContent = 'Saving...';
+            try {
+                const res = await fetch(`${API_BASE_URL}/classes.php?id=${encodeURIComponent(id)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ course_type, start_datetime, location, price, max_capacity, notes })
+                });
+                const json = await res.json();
+                if(!res.ok || !json.success) throw new Error(json.message || 'Failed to update class');
+                closeModal();
+                loadClasses();
+            } catch(err){ alert(err.message); } finally { btn.disabled = false; btn.textContent = original; }
+        });
+        deleteBtn?.addEventListener('click', async () => {
+            const id = document.getElementById('edit-id').value;
+            if(!id) return;
+            if(!confirm('Delete this class? This cannot be undone.')) return;
+            deleteBtn.disabled = true;
+            try {
+                const res = await fetch(`${API_BASE_URL}/classes.php?id=${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'same-origin' });
+                const json = await res.json().catch(()=>({success:false,message:'Bad JSON'}));
+                if(!res.ok || !json.success) throw new Error(json.message || 'Delete failed');
+                closeModal();
+                loadClasses();
+            } catch(err){ alert(err.message); } finally { deleteBtn.disabled = false; }
+        });
     }
 });

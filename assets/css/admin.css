@@ -459,6 +459,14 @@ body {
 .btn-submit-class:hover {
     background-color: var(--color-primary-dark);
 }
+/* Simple admin modal */
+.admin-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; justify-content: center; align-items: flex-start; padding: 4vh 1rem; z-index: 2000; }
+.admin-modal.hidden { display: none !important; }
+.admin-modal-content { background: var(--color-background); width: 100%; max-width: 620px; border-radius: var(--radius-sm); padding: 1.5rem; box-shadow: 0 4px 25px rgba(0,0,0,0.35); }
+.admin-modal-content h2 { margin-top:0; color: var(--color-primary); }
+@media (max-width: 600px){
+    .admin-modal-content { padding: 1rem; }
+}
 /*
  * APPEND TO: assets/css/admin.css
  * ------------------------------------------------ */
