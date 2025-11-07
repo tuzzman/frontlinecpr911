@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FrontlineCPR911 | Schedule & Sign-Up for CPR/AED Classes</title>
+    <title>FrontlineCPR911 | Group CPR/First Aid Training Requests</title>
     
     <link rel="stylesheet" href="assets/css/style20251106.css">
     <style>/* ensure ekg visible above header gradient even if CDN caches CSS */ .header-ekg-container{z-index:1000 !important;}</style>
@@ -22,7 +22,7 @@
                 <button class="menu-toggle" aria-expanded="false">☰</button>
                 <ul>
                     <li><a href="index.html">Home</a></li>
-                    <li><a href="classes.html" class="active">Upcoming Classes</a></li>
+                    <li><a href="classes.html" class="active">Group Training</a></li>
                     <li><a href="about.html">About Us</a></li>
                     <li><a href="contact.html">Contact</a></li>
                 </ul>
@@ -38,74 +38,81 @@
 
     <section class="section class-schedule-section">
         <div class="container">
-            <h1>Upcoming In-Person CPR & AED Training</h1>
-            <p class="intro-text">Select a class below to review details and secure your spot. All classes are taught by experienced Fire/EMS professionals following current AHA guidelines.</p>
-
-            <div id="class-list-container">
-                <p class="intro-text">Loading schedule…</p>
-            </div>
-            </div>
+            <h1>Private & On‑Site Group Training</h1>
+            <p class="intro-text">We come to your business, facility, or team—on your schedule. Request a group CPR/AED or First Aid training session below. An instructor will confirm availability and pricing based on your group size and location.</p>
+        </div>
     </section>
 
     <hr>
 
     <section class="section registration-section" id="registration-form" style="background-color: var(--color-light-gray);">
         <div class="container">
-            <h2>Secure Your Spot & Submit Client Information</h2>
-            <p>Please provide the following details exactly as they should appear on your official **AHA Certification Card**.</p>
-            
-            <form action="/api/register" method="POST" class="registration-form">
+            <h2>Request a Group Class Quote</h2>
+            <p>Tell us about your organization and training needs. No set dates required—we’ll work with you to schedule a convenient session.</p>
+
+            <form id="group-request-form" class="registration-form">
+                <input type="hidden" name="requestType" value="group">
 
                 <div class="form-group">
-                    <label>Selected Course:</label>
-                    <div class="radio-group">
-                        <label class="radio-inline">
-                            <input type="radio" name="selected_class_display" value="BLS Provider" data-class-id="bls" required>
-                            BLS Provider — $75
-                        </label>
-                        <label class="radio-inline">
-                            <input type="radio" name="selected_class_display" value="Heartsaver CPR/AED" data-class-id="heartsaver" required checked>
-                            Heartsaver CPR/AED — $60
-                        </label>
-                        <label class="radio-inline">
-                            <input type="radio" name="selected_class_display" value="First Aid + CPR" data-class-id="firstaid" required>
-                            First Aid + CPR — $85
-                        </label>
-                    </div>
-                </div>
-
-                <input type="hidden" id="registration_class_id" name="classId" value="heartsaver" required>
-                <!-- Populated when clicking Register on a class card (readable course + date) -->
-                <input type="hidden" id="selected_class" name="selected_class" value="">
-
-                <div class="form-group">
-                    <label for="full_name">**Full Name (As you want it on your card):**</label>
-                    <input type="text" id="full_name" name="full_name" placeholder="John Michael Doe" required>
+                    <label for="org_name">Organization / Company</label>
+                    <input type="text" id="org_name" name="org_name" placeholder="Acme Medical Group" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="email">Email Address:</label>
-                    <input type="email" id="email" name="email" required>
+                    <label for="contact_name">Primary Contact Name</label>
+                    <input type="text" id="contact_name" name="contact_name" placeholder="Jane Doe" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="dob">Date of Birth:</label>
-                    <input type="date" id="dob" name="dob" required>
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="phone">Phone Number (Optional):</label>
+                    <label for="phone">Phone Number (Optional)</label>
                     <input type="tel" id="phone" name="phone" placeholder="(555) 555-5555">
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="address">Mailing Address (Street, City, Zip):</label>
-                    <input type="text" id="address" name="address" placeholder="123 Example St, Anytown, 90210" required>
+                    <label for="course_type">Course Type</label>
+                    <select id="course_type" name="course_type" required>
+                        <option value="">Select a course…</option>
+                        <option value="BLS Provider">BLS Provider</option>
+                        <option value="Heartsaver CPR/AED">Heartsaver CPR/AED</option>
+                        <option value="First Aid + CPR">First Aid + CPR</option>
+                    </select>
                 </div>
 
-                <button type="submit" class="btn btn-primary submit-btn">
-                    Complete Registration & Proceed to Payment
-                </button>
+                <div class="form-group">
+                    <label for="participants">Estimated Number of Participants</label>
+                    <input type="number" id="participants" name="participants" min="1" max="1000" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="location_pref">Training Location</label>
+                    <select id="location_pref" name="location_pref" required>
+                        <option value="">Select a location option…</option>
+                        <option value="On-site at our facility">On-site at our facility</option>
+                        <option value="At your location">At your location</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">If at your location, address/city</label>
+                    <input type="text" id="address" name="address" placeholder="123 Example St, City, ZIP">
+                </div>
+
+                <div class="form-group">
+                    <label for="preferred_dates">Preferred Date(s) or Window</label>
+                    <input type="text" id="preferred_dates" name="preferred_dates" placeholder="e.g., Any weekday in December, or 12/5–12/12">
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Additional Notes (optional)</label>
+                    <input type="text" id="notes" name="notes" placeholder="Shift schedules, special requirements, etc.">
+                </div>
+
+                <button type="submit" class="btn btn-primary submit-btn">Request Quote</button>
             </form>
 
         </div>
@@ -119,27 +126,7 @@
     </footer>
 
     <script>
-        // Sync selected radio to hidden class ID for form submission
-        document.addEventListener('DOMContentLoaded', function () {
-            const radios = document.querySelectorAll('input[name="selected_class_display"]');
-            const hidden = document.getElementById('registration_class_id');
-            if (!radios.length || !hidden) return;
-            radios.forEach(r => r.addEventListener('change', function () {
-                hidden.value = this.dataset.classId || this.value;
-                // Update visual selected state (fallback for browsers without :has)
-                radios.forEach(rr => {
-                    const lab = rr.closest('label');
-                    if (lab) lab.classList.toggle('is-selected', rr.checked);
-                });
-            }));
-            // initialize hidden value and visual state based on checked radio
-            const checked = document.querySelector('input[name="selected_class_display"]:checked');
-            if (checked) hidden.value = checked.dataset.classId || checked.value;
-            radios.forEach(rr => {
-                const lab = rr.closest('label');
-                if (lab) lab.classList.toggle('is-selected', rr.checked);
-            });
-        });
+        // No inline script needed; submission handled in assets/js/script20251106.js
     </script>
 
 </body>

@@ -52,11 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Class Loading & Rendering Logic (with fallback)
     // ----------------------------------------------------
     const classListContainer = document.getElementById('class-list-container');
-    const selectedClassInput = document.getElementById('selected_class'); // For registration form
-
-    if (classListContainer) {
-        loadUpcomingClasses();
-    }
+    const groupRequestForm = document.getElementById('group-request-form');
     
     // Function to load data and render class cards
     async function loadUpcomingClasses() {
@@ -167,4 +163,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Existing extras (testimonials, metrics, fades, etc.) omitted for brevity in this alias
+    // ----------------------------------------------------
+    // Group Request Form Submission
+    // ----------------------------------------------------
+    if (groupRequestForm) {
+        groupRequestForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = groupRequestForm.querySelector('.submit-btn');
+            const original = submitBtn.textContent;
+            submitBtn.textContent = 'Sending…';
+            submitBtn.disabled = true;
+
+            const payload = Object.fromEntries(new FormData(groupRequestForm).entries());
+            try {
+                // Attempt API submission to clients.php (group requests)
+                const resp = await fetch(`${API_BASE_URL}/clients.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                let result = {};
+                try { result = await resp.json(); } catch (_) {}
+                if (resp.ok && (result.success === undefined || result.success === true)) {
+                    alert('Thanks! Your group training request has been received. We will reach out to coordinate scheduling and a quote.');
+                    groupRequestForm.reset();
+                } else {
+                    throw new Error(result.message || `Request failed (HTTP ${resp.status})`);
+                }
+            } catch (err) {
+                console.warn('API unavailable, falling back to email', err);
+                // Fallback: open mailto with prefilled body
+                const lines = [
+                    'Group Training Request',
+                    '',
+                    `Organization: ${groupRequestForm.org_name.value || ''}`,
+                    `Contact: ${groupRequestForm.contact_name.value || ''}`,
+                    `Email: ${groupRequestForm.email.value || ''}`,
+                    `Phone: ${groupRequestForm.phone.value || ''}`,
+                    `Course: ${groupRequestForm.course_type.value || ''}`,
+                    `Participants: ${groupRequestForm.participants.value || ''}`,
+                    `Location: ${groupRequestForm.location_pref.value || ''}`,
+                    `Address/City: ${groupRequestForm.address.value || ''}`,
+                    `Preferred Dates: ${groupRequestForm.preferred_dates.value || ''}`,
+                    `Notes: ${groupRequestForm.notes.value || ''}`,
+                ];
+                const mailto = `mailto:frontlinecpr911@gmail.com?subject=${encodeURIComponent('Group Training Request')}&body=${encodeURIComponent(lines.join('\n'))}`;
+                window.location.href = mailto;
+            } finally {
+                submitBtn.textContent = original;
+                submitBtn.disabled = false;
+            }
+        });
+    }
 });
