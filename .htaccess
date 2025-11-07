@@ -7,9 +7,23 @@
 # Ensure index.html is used as directory index
 DirectoryIndex index.html
 
-# Disable rewrites (we serve static files only)
+# Rewrites: map versioned CSS URLs to canonical asset for cache-busting
 <IfModule mod_rewrite.c>
-  RewriteEngine Off
+  RewriteEngine On
+  RewriteBase /
+
+  # If requested path is an existing file or directory, serve it
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Map style-<version>.css to style.css (e.g., assets/css/style-20251106.css)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^assets/css/style-[0-9A-Za-z_.-]+\.css$ assets/css/style.css [L,NC]
+
+  # Map dotted versions like style.v2.css to style.css
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^assets/css/style\.[0-9A-Za-z_.-]+\.css$ assets/css/style.css [L,NC]
 </IfModule>
 
 # Security and convenience
