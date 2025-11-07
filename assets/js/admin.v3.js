@@ -324,13 +324,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const original = btn.textContent;
             btn.disabled = true; btn.textContent = 'Saving...';
             try {
-                const res = await fetch(`${API_BASE_URL}/classes.php?id=${encodeURIComponent(id)}`, {
+                let res = await fetch(`${API_BASE_URL}/classes.php?id=${encodeURIComponent(id)}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
                     body: JSON.stringify({ course_type, start_datetime, location, price, max_capacity, notes })
                 });
-                const json = await res.json();
+                if (!res.ok && (res.status === 405 || res.status === 400 || res.status === 500)) {
+                    // Fallback: POST with method override header
+                    res = await fetch(`${API_BASE_URL}/classes.php?id=${encodeURIComponent(id)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ course_type, start_datetime, location, price, max_capacity, notes, _method: 'PUT' })
+                    });
+                }
+                const json = await res.json().catch(()=>({success:false,message:'Server error'}));
                 if(!res.ok || !json.success) throw new Error(json.message || 'Failed to update class');
                 closeModal();
                 loadClasses();
@@ -342,7 +351,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if(!confirm('Delete this class? This cannot be undone.')) return;
             deleteBtn.disabled = true;
             try {
-                const res = await fetch(`${API_BASE_URL}/classes.php?id=${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'same-origin' });
+                let res = await fetch(`${API_BASE_URL}/classes.php?id=${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'same-origin' });
+                if (!res.ok && (res.status === 405 || res.status === 400 || res.status === 500)) {
+                    res = await fetch(`${API_BASE_URL}/classes.php?id=${encodeURIComponent(id)}&_method=DELETE`, {
+                        method: 'POST', credentials: 'same-origin', headers: { 'X-HTTP-Method-Override': 'DELETE' }
+                    });
+                }
                 const json = await res.json().catch(()=>({success:false,message:'Bad JSON'}));
                 if(!res.ok || !json.success) throw new Error(json.message || 'Delete failed');
                 closeModal();

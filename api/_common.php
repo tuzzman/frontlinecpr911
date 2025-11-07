@@ -15,6 +15,32 @@ function read_json_body(): array {
     return is_array($data) ? $data : [];
 }
 
+// Support method override via header or query (_method) when hosting blocks PUT/DELETE.
+function effective_method(): string {
+    $original = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+    $override = '';
+    // Header override
+    if (!empty($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
+        $override = strtoupper(trim($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']));
+    }
+    // Query param override if header not set
+    if ($override === '' && isset($_GET['_method'])) {
+        $override = strtoupper(trim($_GET['_method']));
+    }
+    // Body field override (JSON) only if not already set
+    if ($override === '' && in_array($original, ['POST'])) {
+        $body = read_json_body();
+        if (isset($body['_method'])) {
+            $maybe = strtoupper(trim($body['_method']));
+            if ($maybe) $override = $maybe;
+        }
+    }
+    if ($override && in_array($override, ['PUT','DELETE','PATCH'])) {
+        return $override;
+    }
+    return $original;
+}
+
 function require_method(string $method): void {
     if (strtoupper($_SERVER['REQUEST_METHOD'] ?? '') !== strtoupper($method)) {
         json_response(405, [ 'success' => false, 'message' => 'Method Not Allowed' ]);

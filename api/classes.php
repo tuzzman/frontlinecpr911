@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/_common.php';
 $pdo = pdo_or_503();
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$method = effective_method();
 
 if ($method === 'GET') {
     // Admin-only listing for now (could add a public subset later)
