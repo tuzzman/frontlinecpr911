@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             try {
                 // Attempt API submission to clients.php (group requests)
-                const resp = await fetch(`${API_BASE_URL}/clients.php`, {
+                const resp = await fetch(`${API_BASE_URL}/group_request.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
