@@ -1,0 +1,17 @@
+# Per-directory rewrite for CSS versioned URLs
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /assets/css/
+
+    # If the requested file exists, serve it
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Map style-<version>.css to style.css
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^style-[0-9A-Za-z_.-]+\.css$ style.css [L,NC]
+
+    # Map style.<version>.css to style.css
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^style\.[0-9A-Za-z_.-]+\.css$ style.css [L,NC]
+</IfModule>
