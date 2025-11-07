@@ -64,6 +64,29 @@
       <header class="admin-header">
         <h1>Dashboard</h1>
       </header>
+      <!-- Summary Metrics -->
+      <section class="summary-cards" id="gr-summary-cards" aria-label="Group Request Summary" style="margin-bottom:1.5rem;">
+        <div class="card card-white" data-metric="total">
+          <h3>Total Requests</h3>
+          <p class="data-point" id="metric-total">0</p>
+        </div>
+        <div class="card card-red" data-metric="new">
+          <h3>New</h3>
+          <p class="data-point" id="metric-new">0</p>
+        </div>
+        <div class="card card-black" data-metric="contacted">
+          <h3>Contacted</h3>
+          <p class="data-point" id="metric-contacted">0</p>
+        </div>
+        <div class="card card-white" data-metric="scheduled">
+          <h3>Scheduled</h3>
+          <p class="data-point" id="metric-scheduled">0</p>
+        </div>
+        <div class="card card-white" data-metric="closed">
+          <h3>Closed</h3>
+          <p class="data-point" id="metric-closed">0</p>
+        </div>
+      </section>
 
       <section class="dashboard-table-section">
         <div style="display:flex; align-items: end; gap: 1rem; flex-wrap: wrap;">
@@ -93,7 +116,7 @@
           <button id="export-gr" class="btn-action export">Export CSV</button>
         </div>
 
-        <table class="class-summary-table" style="margin-top: 1rem;">
+  <table class="class-summary-table" style="margin-top: 1rem;">
           <thead>
             <tr>
               <th>Date</th>

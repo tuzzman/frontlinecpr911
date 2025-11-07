@@ -12,6 +12,8 @@ function showToast(message, type='info', timeout=3500){
     if(!container){
         container = document.createElement('div');
         container.className = 'toast-container';
+        container.setAttribute('role','status');
+        container.setAttribute('aria-live','polite');
         document.body.appendChild(container);
     }
     const el = document.createElement('div');
@@ -105,7 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(`${API_BASE_URL}/group_request.php?${params.toString()}`, { credentials: 'same-origin' });
                 const json = await res.json();
                 if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load');
-                renderRows(json.data || []);
+                const rows = json.data || [];
+                renderRows(rows);
+                renderSummary(rows);
             } catch (err) {
                 console.error(err);
                 grTableBody.innerHTML = '<tr><td colspan="10">Error loading data.</td></tr>';
@@ -213,6 +217,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('gr-filter-form')?.addEventListener('submit', (e) => {
             e.preventDefault();
+            // persist filters
+            const persist = {
+                status: statusFilter?.value || '',
+                from: fromInput?.value || '',
+                to: toInput?.value || ''
+            };
+            try { localStorage.setItem('grFilters', JSON.stringify(persist)); } catch(_){}
             loadGroupRequests();
         });
 
@@ -224,7 +235,24 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = `${API_BASE_URL}/export.php?type=group_requests&${params.toString()}`;
         });
 
+        // Restore filters
+        try {
+            const saved = JSON.parse(localStorage.getItem('grFilters')||'null');
+            if(saved){
+                if(statusFilter) statusFilter.value = saved.status||'';
+                if(fromInput) fromInput.value = saved.from||'';
+                if(toInput) toInput.value = saved.to||'';
+            }
+        } catch(_){ }
         loadGroupRequests();
+
+        function renderSummary(rows){
+            const total = rows.length;
+            const tally = { new:0, contacted:0, scheduled:0, closed:0 };
+            rows.forEach(r=>{ if(tally[r.status]!==undefined) tally[r.status]++; });
+            const set = (id,val)=>{ const el = document.getElementById(id); if(el) el.textContent = String(val); };
+            set('metric-total', total); set('metric-new', tally.new); set('metric-contacted', tally.contacted); set('metric-scheduled', tally.scheduled); set('metric-closed', tally.closed);
+        }
     }
     
     // Clients & Rosters page
@@ -245,6 +273,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     opt.textContent = `${labelDate} • ${c.course_type} (${c.registrations})`;
                     classSelect.appendChild(opt);
                 });
+                // Restore selection
+                try { const savedId = localStorage.getItem('clientsSelectedClass'); if(savedId && classSelect.querySelector(`option[value="${savedId}"]`)) { classSelect.value = savedId; loadRoster(savedId); } } catch(_){}
             } catch (e) {
                 console.error(e);
             }
@@ -271,8 +301,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td data-label="Email">${r.email || ''}</td>
                         <td data-label="Phone">${r.phone || ''}</td>
                         <td data-label="Address">${r.address || ''}</td>
-                        <td data-label="Status">${r.payment_status || ''}</td>
-                        <td data-label="Actions"><button class="btn-action edit js-edit-client" type="button">Edit</button></td>
+                        <td data-label="Status">
+                            <select class="client-status-select" aria-label="Payment status for ${r.full_name}">
+                                ${['','paid','pending'].map(s=>`<option value="${s}" ${s===(r.payment_status||'')?'selected':''}>${s||'Unknown'}</option>`).join('')}
+                            </select>
+                        </td>
+                        <td data-label="Actions">
+                            <div style="display:flex; gap:.4rem; flex-wrap:wrap;">
+                                <button class="btn-action edit js-edit-client" type="button">Edit</button>
+                                <button class="btn-action view client-save-row" type="button">Save</button>
+                            </div>
+                        </td>
                     </tr>
                 `).join('');
                 attachClientEditButtons();
@@ -287,8 +326,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('clients-filter-form')?.addEventListener('submit', (e) => {
             e.preventDefault();
             const id = classSelect.value;
-            if (id) loadRoster(id);
+            if (id) { try{ localStorage.setItem('clientsSelectedClass', id); }catch(_){} loadRoster(id); }
         });
+        classSelect?.addEventListener('change', ()=>{ if(classSelect.value) { try{ localStorage.setItem('clientsSelectedClass', classSelect.value);}catch(_){} } });
 
         document.getElementById('export-roster-pdf')?.addEventListener('click', () => {
             const id = classSelect.value;
@@ -333,14 +373,19 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput?.addEventListener('input', () => {
             clearTimeout(searchTimer);
             searchTimer = setTimeout(applyClientSearchFilter, 150);
+            try { localStorage.setItem('clientsSearch', searchInput.value || ''); } catch(_){}
         });
+        // Restore search query
+        try { const q = localStorage.getItem('clientsSearch'); if(searchInput && q){ searchInput.value = q; } } catch(_){}
         // Client edit modal logic
         const clientModal = document.getElementById('edit-client-modal');
         const clientEditForm = document.getElementById('client-edit-form');
         const clientCancelBtn = document.getElementById('client-cancel-btn');
         const clientDeleteBtn = document.getElementById('client-delete-btn');
+        let lastClientTrigger = null;
         function openClientModal(data){
             if(!clientModal) return;
+            lastClientTrigger = document.activeElement;
             clientModal.classList.remove('hidden');
             document.getElementById('client-edit-id').value = data.id;
             document.getElementById('client-full-name').value = data.full_name || '';
@@ -349,9 +394,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('client-phone').value = data.phone || '';
             document.getElementById('client-address').value = data.address || '';
             document.getElementById('client-status').value = (data.payment_status||'');
+            document.getElementById('client-full-name').focus();
         }
-        function closeClientModal(){ clientModal?.classList.add('hidden'); }
+        function closeClientModal(){ clientModal?.classList.add('hidden'); lastClientTrigger?.focus?.(); }
         clientCancelBtn?.addEventListener('click', closeClientModal);
+        clientModal?.addEventListener('click', (e)=>{ if(e.target===clientModal) closeClientModal(); });
+        document.addEventListener('keydown', (e)=>{ if(!clientModal?.classList.contains('hidden') && e.key==='Escape') closeClientModal(); });
         function attachClientEditButtons(){
             clientsTbody.querySelectorAll('.js-edit-client').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -361,6 +409,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         }
+
+        // Inline save for payment status
+        clientsTbody.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.client-save-row');
+            if(!btn) return;
+            const tr = btn.closest('tr');
+            const id = tr.getAttribute('data-client-id');
+            if(!id) return;
+            const raw = tr.getAttribute('data-json');
+            let data = {};
+            try { data = JSON.parse(raw.replace(/&#39;/g,'"')); } catch(_){}
+            const payment_status = tr.querySelector('.client-status-select')?.value || '';
+            const payload = { full_name: data.full_name||'', dob: data.dob||'', email: data.email||'', phone: data.phone||'', address: data.address||'', payment_status };
+            const original = btn.textContent; btn.disabled = true; btn.textContent = 'Saving...'; btn.classList.add('btn-loading');
+            try {
+                let res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}`, { method:'PUT', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify(payload) });
+                if(!res.ok && (res.status===405 || res.status===400 || res.status===500)){
+                    res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}`, { method:'POST', headers:{'Content-Type':'application/json','X-HTTP-Method-Override':'PUT'}, credentials:'same-origin', body: JSON.stringify({...payload, _method:'PUT'}) });
+                }
+                const json = await res.json().catch(()=>({success:false,message:'Bad JSON'}));
+                if(!res.ok || !json.success) throw new Error(json.message||'Update failed');
+                data.payment_status = payment_status;
+                tr.setAttribute('data-json', JSON.stringify(data).replace(/'/g,'&#39;'));
+                showToast('Status saved','success');
+            } catch(err){ showToast(err.message,'error'); }
+            finally { btn.disabled=false; btn.textContent=original; btn.classList.remove('btn-loading'); }
+        });
         clientEditForm?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('client-edit-id').value;
@@ -479,8 +554,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const editForm = document.getElementById('class-edit-form');
         const cancelBtn = document.getElementById('edit-cancel-btn');
         const deleteBtn = document.getElementById('edit-delete-btn');
+        let lastClassTrigger = null;
         function openModal(data){
             if(!modal) return;
+            lastClassTrigger = document.activeElement;
             modal.classList.remove('hidden');
             document.getElementById('edit-id').value = data.id;
             document.getElementById('edit-course').value = data.course_type || '';
@@ -496,9 +573,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('edit-price').value = data.price ?? '';
             document.getElementById('edit-capacity').value = data.max_capacity ?? '';
             document.getElementById('edit-notes').value = data.notes || '';
+            document.getElementById('edit-course').focus();
         }
-        function closeModal(){ modal?.classList.add('hidden'); }
+        function closeModal(){ modal?.classList.add('hidden'); lastClassTrigger?.focus?.(); }
         cancelBtn?.addEventListener('click', closeModal);
+        modal?.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
+        document.addEventListener('keydown', (e)=>{ if(!modal?.classList.contains('hidden') && e.key==='Escape') closeModal(); });
         function attachEditButtons(){
             classesTbody.querySelectorAll('.js-edit-class').forEach(btn => {
                 btn.addEventListener('click', () => {
