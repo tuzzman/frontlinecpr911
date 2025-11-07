@@ -271,6 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const opt = document.createElement('option');
                     opt.value = c.id;
                     opt.textContent = `${labelDate} • ${c.course_type} (${c.registrations})`;
+                    opt.setAttribute('data-json', JSON.stringify(c).replace(/'/g,"&#39;"));
                     classSelect.appendChild(opt);
                 });
                 // Restore selection
@@ -339,6 +340,48 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = classSelect.value;
             if (!id) return showToast('Select a class first','warn');
             window.location.href = `${API_BASE_URL}/export.php?type=roster&classId=${encodeURIComponent(id)}&format=csv`;
+        });
+
+        // Roster QR logic (clients page)
+        const rosterQrBtn = document.getElementById('show-roster-qr');
+        const rosterQrModal = document.getElementById('roster-qr-modal');
+        const rosterQrImg = document.getElementById('roster-qr-img');
+        const rosterQrLink = document.getElementById('roster-qr-link');
+        const rosterQrMeta = document.getElementById('roster-qr-meta');
+        const rosterQrCopy = document.getElementById('roster-qr-copy');
+        const rosterQrDownload = document.getElementById('roster-qr-download');
+        const rosterQrClose = document.getElementById('roster-qr-close');
+        let lastRosterQrTrigger = null;
+        function openRosterQr(){
+            const id = classSelect.value;
+            if(!id){ showToast('Select a class first','warn'); return; }
+            const opt = classSelect.selectedOptions[0];
+            let data = { id };
+            try { data = JSON.parse((opt.getAttribute('data-json')||'').replace(/&#39;/g,'"')) || data; } catch(_){ }
+            const base = location.origin;
+            const link = `${base}/class_checkin.html?class=${id}`;
+            const encoded = encodeURIComponent(link);
+            const qrUrl = `https://quickchart.io/qr?text=${encoded}&size=512&margin=1`;
+            rosterQrLink.value = link;
+            rosterQrImg.src = qrUrl;
+            rosterQrImg.alt = `QR code for class ${id}`;
+            const dt = data.start_datetime ? new Date(data.start_datetime.replace(' ', 'T')) : null;
+            const dtLabel = dt ? dt.toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : 'Unscheduled';
+            rosterQrMeta.innerHTML = `<strong>${data.course_type || 'Class'}</strong><br>${dtLabel}<br>${data.location || ''}`;
+            rosterQrDownload.href = qrUrl;
+            lastRosterQrTrigger = document.activeElement;
+            rosterQrModal?.classList.remove('hidden');
+            rosterQrCopy?.focus();
+        }
+        rosterQrBtn?.addEventListener('click', openRosterQr);
+        function closeRosterQr(){ rosterQrModal?.classList.add('hidden'); lastRosterQrTrigger?.focus?.(); }
+        rosterQrClose?.addEventListener('click', closeRosterQr);
+        rosterQrModal?.addEventListener('click', (e)=>{ if(e.target===rosterQrModal) closeRosterQr(); });
+        document.addEventListener('keydown', (e)=>{ if(!rosterQrModal?.classList.contains('hidden') && e.key==='Escape') closeRosterQr(); });
+        rosterQrCopy?.addEventListener('click', () => {
+            rosterQrLink?.select?.();
+            try { document.execCommand('copy'); showToast('Link copied','success'); } catch(_){ navigator.clipboard?.writeText(rosterQrLink.value).then(()=>showToast('Link copied','success')).catch(()=>showToast('Copy failed','error')); }
+            rosterQrLink?.setSelectionRange?.(0,0);
         });
 
         loadClassesForFilter();

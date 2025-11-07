@@ -97,6 +97,7 @@
           <div>
             <button id="export-roster-pdf" class="btn-action export">Export Roster PDF</button>
             <button id="export-roster-csv" class="btn-action export">Export Roster CSV</button>
+            <button id="show-roster-qr" class="btn-action view" style="margin-left:.25rem;">Show Check-In QR</button>
           </div>
         </div>
 
@@ -170,6 +171,27 @@
               <button type="button" class="btn-action export" id="client-delete-btn">Delete</button>
             </div>
           </form>
+        </div>
+      </div>
+      <!-- Roster QR Modal -->
+      <div id="roster-qr-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="rosterQrTitle">
+        <div class="admin-modal-content">
+          <h2 id="rosterQrTitle">Class Check-In QR</h2>
+          <div id="roster-qr-meta" style="margin-bottom:.75rem; font-size:.95rem; opacity:.85;"></div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:.75rem;">
+            <img id="roster-qr-img" src="" alt="QR code for class check-in" style="width:256px;height:256px;border:1px solid #eee;border-radius:6px;" />
+            <div style="width:100%;">
+              <label for="roster-qr-link" style="display:block; font-weight:700; margin-bottom:.25rem;">Check-In Link</label>
+              <div style="display:flex; gap:.5rem; align-items:center;">
+                <input id="roster-qr-link" type="text" readonly style="flex:1; padding:.5rem; border:1px solid #ccc; border-radius:4px;" />
+                <button type="button" id="roster-qr-copy" class="btn-action view">Copy</button>
+              </div>
+            </div>
+            <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.5rem;">
+              <a id="roster-qr-download" href="#" download class="btn-action export">Download PNG</a>
+              <button type="button" id="roster-qr-close" class="btn-action edit">Close</button>
+            </div>
+          </div>
         </div>
       </div>
     </main>
