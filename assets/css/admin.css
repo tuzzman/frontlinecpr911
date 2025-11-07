@@ -25,11 +25,15 @@ body {
     background-color: var(--color-light-gray); /* Light gray background for admin area */
     color: var(--color-secondary);
     line-height: 1.6;
+    margin: 0;
+}
+
+/* Centering only for the login page to avoid interfering with sticky topbar on mobile */
+.login-body {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    margin: 0;
 }
 
 /* --- Admin Mobile Topbar & Dropdown (shown on small screens) --- */
@@ -365,6 +369,11 @@ body {
         font-weight: 700;
         text-align: left;
     }
+
+    /* Ensure full-width layout on mobile (prevent phantom left column) */
+    .admin-wrapper { flex-direction: column; }
+    .main-content { width: 100%; padding: var(--spacing-md); }
+    body { overflow-x: hidden; }
 }
 /*
  * APPEND TO: assets/css/admin.css

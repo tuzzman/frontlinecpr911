@@ -1,0 +1,2 @@
+/* Versioned alias for cache-busting; imports canonical admin stylesheet */
+@import url('./admin.css');
