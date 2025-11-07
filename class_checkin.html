@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Class Check-In • FrontlineCPR911</title>
+  <link rel="icon" type="image/png" href="assets/img/favicon-red.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style20251106.css" />
+  <style>
+    body { padding-top: 0; }
+    .checkin-wrapper { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .checkin-card { background:#fff; border:1px solid var(--color-light-gray); border-radius:8px; padding:1.5rem 1.25rem 2rem; box-shadow:0 4px 16px rgba(0,0,0,0.08); }
+    h1 { margin-top:0; font-size:1.7rem; }
+    .class-meta { background: var(--color-light-gray); padding: .9rem 1rem; border-radius:6px; font-size:.9rem; line-height:1.5; margin-bottom:1.25rem; }
+    form .form-group { margin-bottom:1rem; }
+    form label { font-weight:700; font-size:.9rem; display:block; margin-bottom:.35rem; }
+    form input[type=text], form input[type=email], form input[type=tel], form input[type=date] { width:100%; padding:.65rem .75rem; border:1px solid #ccc; border-radius:4px; font-size:1rem; }
+    .required:after { content:' *'; color: var(--color-primary); }
+    .submit-btn { background: var(--color-primary); color:#fff; border:none; border-radius:4px; padding:.85rem 1.25rem; font-size:1rem; font-weight:700; cursor:pointer; width:100%; margin-top:.5rem; }
+    .submit-btn[disabled] { opacity: .6; cursor: not-allowed; }
+    .success-panel { text-align:center; padding:2rem 1rem; }
+    .success-panel h2 { color: var(--color-primary); }
+    .alert-inline { font-size:.85rem; margin-top:.25rem; color: var(--color-primary-dark); display:none; }
+    .error-text { color:#842029; font-size:.8rem; margin-top:.25rem; }
+    .footer-note { margin-top:2rem; font-size:.7rem; opacity:.75; text-align:center; }
+    @media (min-width:640px){ h1 { font-size:2rem; } }
+  </style>
+  <!-- QR CODE HINT: Generate a QR pointing to https://yourdomain.com/class_checkin.html?class=CLASS_ID -->
+  <!-- Intersection Observer Fallback -->
+  <script>
+    if (!('IntersectionObserver' in window)) {
+      document.write('<script src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver"><\/script>');
+    }
+  </script>
+</head>
+<body>
+  <header>
+  <div class="container header-content">
+    <div class="logo">
+      <a href="index.html"><h1>Frontline<span class="cpr">CPR</span>911</h1></a>
+    </div>
+    <nav class="main-nav">
+      <button class="menu-toggle" aria-expanded="false">☰</button>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="classes.html">Group Training</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="header-ekg-container">
+    <svg class="ekg-svg" viewBox="0 0 1000 56" preserveAspectRatio="none" aria-hidden="true">
+      <path class="ekg-path" d="M20 28 H120 L140 28 L150 8 L170 48 L190 28 H380 L420 28 L440 28 L460 12 L480 44 L500 28 H980" />
+    </svg>
+  </div>
+  </header>
+  <div class="checkin-wrapper">
+    <div class="checkin-card" id="card-loading">
+      <p>Loading class info...</p>
+    </div>
+    <div class="checkin-card" id="card-error" style="display:none;">
+      <h1>Class Not Found</h1>
+      <p>The class link is invalid or has been removed. Please verify the QR code with your instructor.</p>
+    </div>
+    <div class="checkin-card" id="card-form" style="display:none;">
+      <h1 id="class-title">Class Check-In</h1>
+      <div class="class-meta" id="class-meta"></div>
+      <form id="checkin-form" novalidate>
+        <div class="form-group">
+          <label for="first_name" class="required">First Name</label>
+          <input id="first_name" name="first_name" type="text" autocomplete="given-name" required />
+          <div class="error-text" data-error-for="first_name"></div>
+        </div>
+        <div class="form-group">
+          <label for="last_name" class="required">Last Name</label>
+          <input id="last_name" name="last_name" type="text" autocomplete="family-name" required />
+          <div class="error-text" data-error-for="last_name"></div>
+        </div>
+        <div class="form-group">
+          <label for="email" class="required">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required />
+          <div class="error-text" data-error-for="email"></div>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="Optional" />
+        </div>
+        <div class="form-group">
+          <label for="dob">Date of Birth</label>
+          <input id="dob" name="dob" type="date" />
+        </div>
+        <div class="form-group">
+          <label for="address">Address</label>
+          <input id="address" name="address" type="text" autocomplete="street-address" placeholder="Optional full mailing address" />
+        </div>
+        <input type="hidden" id="class_id" name="classId" />
+        <button type="submit" class="submit-btn" id="submit-btn">Submit Check-In</button>
+        <div class="alert-inline" id="duplicate-msg">You were already registered for this class. Details refreshed.</div>
+      </form>
+      <div class="footer-note">Data used solely for AHA eCard issuance & class records. By submitting you consent to secure storage.</div>
+    </div>
+    <div class="checkin-card" id="card-success" style="display:none;">
+      <div class="success-panel">
+        <h2>Check-In Complete</h2>
+        <p>Thank you! You're recorded for this class.</p>
+        <p style="font-size:.9rem;">You may close this page.</p>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <div class="container">
+        <p>&copy; 2025 FrontlineCPR911 Training. All rights reserved. | <a href="admin/dashboard.html">Admin Login</a></p>
+        <p>Training proudly based on Current AHA Guidelines.</p>
+    </div>
+  </footer>
+  <script src="assets/js/script.js"></script>
+  <script src="assets/js/checkin.js"></script>
+</body>
+</html>

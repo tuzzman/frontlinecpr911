@@ -10,34 +10,78 @@ if ($method === 'POST') {
     $phone = trim($body['phone'] ?? '');
     $dob = trim($body['dob'] ?? '');
     $address = trim($body['address'] ?? '');
+    $classId = isset($body['classId']) ? (int)$body['classId'] : null;
 
     if ($first_name === '' || $last_name === '' || $email === '') {
         json_response(400, [ 'success' => false, 'message' => 'Missing required fields' ]);
     }
     $pdo = pdo_or_503();
-
     $pdo->beginTransaction();
     try {
-        $stmt = $pdo->prepare("INSERT INTO clients (first_name, last_name, email, phone, dob, address, created_at) VALUES (:fn, :ln, :em, :ph, :dob, :addr, NOW())");
-        $stmt->execute([
-            ':fn' => $first_name,
-            ':ln' => $last_name,
-            ':em' => $email,
-            ':ph' => $phone,
-            ':dob' => $dob,
-            ':addr' => $address,
-        ]);
-        $clientId = $pdo->lastInsertId();
+        // Attempt to find existing client by email
+        $stmtFind = $pdo->prepare('SELECT id, first_name, last_name FROM clients WHERE email = :em LIMIT 1');
+        $stmtFind->execute([':em'=>$email]);
+        $existing = $stmtFind->fetch();
+        if ($existing) {
+            $clientId = (int)$existing['id'];
+            // Optionally update contact fields (non-destructive minimal update)
+            $upd = $pdo->prepare('UPDATE clients SET first_name=:fn,last_name=:ln,phone=:ph,dob=:dob,address=:addr WHERE id=:id');
+            $upd->execute([
+                ':fn'=>$first_name ?: $existing['first_name'],
+                ':ln'=>$last_name ?: $existing['last_name'],
+                ':ph'=>$phone ?: null,
+                ':dob'=>$dob ?: null,
+                ':addr'=>$address ?: null,
+                ':id'=>$clientId
+            ]);
+            $created = false;
+        } else {
+            $ins = $pdo->prepare('INSERT INTO clients (first_name,last_name,email,phone,dob,address,created_at) VALUES (:fn,:ln,:em,:ph,:dob,:addr,NOW())');
+            $ins->execute([
+                ':fn'=>$first_name,
+                ':ln'=>$last_name,
+                ':em'=>$email,
+                ':ph'=>$phone ?: null,
+                ':dob'=>$dob ?: null,
+                ':addr'=>$address ?: null,
+            ]);
+            $clientId = (int)$pdo->lastInsertId();
+            $created = true;
+        }
 
-        // Optional: link to class if classId provided
-        $classId = $body['classId'] ?? null;
+        $alreadyRegistered = false;
         if ($classId) {
-            $stmt2 = $pdo->prepare("INSERT INTO registrations (class_id, client_id, status, created_at) VALUES (:cid, :clid, 'pending', NOW())");
-            $stmt2->execute([':cid' => $classId, ':clid' => $clientId]);
+            // Check if class exists for basic validation
+            $cCheck = $pdo->prepare('SELECT id, max_capacity FROM classes WHERE id = :cid');
+            $cCheck->execute([':cid'=>$classId]);
+            $classRow = $cCheck->fetch();
+            if (!$classRow) {
+                throw new Exception('Class not found');
+            }
+            // Check existing registration
+            $regCheck = $pdo->prepare('SELECT id FROM registrations WHERE class_id = :cid AND client_id = :clid LIMIT 1');
+            $regCheck->execute([':cid'=>$classId, ':clid'=>$clientId]);
+            $regRow = $regCheck->fetch();
+            if ($regRow) {
+                $alreadyRegistered = true;
+            } else {
+                // Optional capacity check
+                if (!empty($classRow['max_capacity'])) {
+                    $capCnt = $pdo->prepare('SELECT COUNT(*) AS cnt FROM registrations WHERE class_id = :cid');
+                    $capCnt->execute([':cid'=>$classId]);
+                    $current = (int)$capCnt->fetch()['cnt'];
+                    if ($current >= (int)$classRow['max_capacity']) {
+                        // At capacity
+                        json_response(409, ['success'=>false,'message'=>'Class is full']);
+                    }
+                }
+                $insReg = $pdo->prepare('INSERT INTO registrations (class_id, client_id, status, created_at) VALUES (:cid,:clid,\'pending\',NOW())');
+                $insReg->execute([':cid'=>$classId, ':clid'=>$clientId]);
+            }
         }
 
         $pdo->commit();
-        json_response(200, [ 'success' => true, 'client_id' => $clientId ]);
+        json_response(200, [ 'success' => true, 'client_id' => $clientId, 'created_new' => $created, 'already_registered' => $alreadyRegistered ]);
     } catch (Throwable $e) {
         $pdo->rollBack();
         json_response(500, [ 'success' => false, 'message' => 'Server error', 'error' => $e->getMessage() ]);
