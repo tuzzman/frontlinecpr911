@@ -2,7 +2,7 @@
  * FRONTLINECPR911 PUBLIC SITE JAVASCRIPT
  */
 
-const API_BASE_URL = 'https://frontlinecpr911.com/api';
+const API_BASE_URL = '/api';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Mobile Menu Toggle
