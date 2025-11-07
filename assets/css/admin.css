@@ -32,6 +32,54 @@ body {
     margin: 0;
 }
 
+/* --- Admin Mobile Topbar & Dropdown (shown on small screens) --- */
+.admin-topbar {
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    background-color: var(--color-secondary);
+    color: var(--color-background);
+    padding: 0.75rem var(--spacing-md);
+}
+
+.admin-topbar .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admin-topbar .brand {
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.admin-menu-toggle {
+    background: transparent;
+    color: var(--color-background);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 0.35rem 0.6rem;
+    border-radius: var(--radius-sm);
+    font-size: 1.1rem;
+}
+
+.admin-mobile-nav {
+    display: none;
+    background-color: var(--color-secondary);
+    border-top: 1px solid rgba(255,255,255,0.15);
+}
+.admin-mobile-nav ul { list-style: none; margin: 0; padding: 0; }
+.admin-mobile-nav li a {
+    display: block;
+    padding: 0.9rem var(--spacing-md);
+    color: var(--color-background);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.admin-mobile-nav li a:hover { background-color: var(--color-primary-dark); }
+.admin-mobile-nav.open { display: block; }
+
 /* --- Login Box Styling --- */
 
 .login-container {
@@ -274,6 +322,9 @@ body {
     .sidebar {
         display: none; /* Hide sidebar on small screens */
     }
+
+    /* Show the topbar and mobile nav on small screens */
+    .admin-topbar { display: block; }
 
     .summary-cards {
         grid-template-columns: 1fr; /* Stack cards vertically */

@@ -16,6 +16,20 @@ document.addEventListener('click', async (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Mobile admin menu toggle (similar to public site)
+    const adminMenuBtn = document.querySelector('.admin-menu-toggle');
+    const adminMobileNav = document.querySelector('.admin-mobile-nav');
+    if (adminMenuBtn && adminMobileNav) {
+        adminMenuBtn.addEventListener('click', () => {
+            const isOpen = adminMobileNav.classList.toggle('open');
+            // small delay to allow CSS transition if added later
+            if (isOpen) {
+                // eslint-disable-next-line no-unused-expressions
+                adminMobileNav.offsetHeight;
+            }
+            adminMenuBtn.setAttribute('aria-expanded', String(isOpen));
+        });
+    }
     async function checkAuthIfNeeded() {
         const requiresAuth = document.querySelector('[data-requires-auth]');
         if (!requiresAuth) return;

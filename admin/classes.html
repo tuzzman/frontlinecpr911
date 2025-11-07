@@ -10,6 +10,22 @@
   <link rel="stylesheet" href="../assets/css/admin.css" />
 </head>
 <body>
+  <!-- Mobile Topbar -->
+  <div class="admin-topbar">
+    <div class="topbar-inner">
+      <div class="brand">FrontlineCPR911 Admin</div>
+      <button class="admin-menu-toggle" aria-expanded="false" aria-label="Toggle menu">☰</button>
+    </div>
+    <nav class="admin-mobile-nav">
+      <ul>
+        <li><a href="dashboard.html">Group Requests</a></li>
+        <li><a href="clients.html">Clients & Rosters</a></li>
+        <li><a href="classes.html" class="active">Classes</a></li>
+        <li><a href="#" class="logout-link" id="logout">Logout</a></li>
+      </ul>
+    </nav>
+  </div>
+
   <div class="admin-wrapper" data-requires-auth>
     <aside class="sidebar">
       <div class="logo-admin">
