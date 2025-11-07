@@ -112,13 +112,58 @@
               <th>Phone</th>
               <th>Address</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="clients-tbody">
-            <tr><td colspan="7">Select a class to load roster.</td></tr>
+            <tr><td colspan="8">Select a class to load roster.</td></tr>
           </tbody>
         </table>
       </section>
+      <!-- Edit Client Modal -->
+      <div id="edit-client-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="editClientTitle">
+        <div class="admin-modal-content">
+          <h2 id="editClientTitle">Edit Client</h2>
+          <form id="client-edit-form">
+            <input type="hidden" id="client-edit-id" />
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="client-full-name">Full Name</label>
+                <input type="text" id="client-full-name" required />
+              </div>
+              <div class="form-group">
+                <label for="client-dob">DOB</label>
+                <input type="date" id="client-dob" />
+              </div>
+              <div class="form-group">
+                <label for="client-email">Email</label>
+                <input type="email" id="client-email" />
+              </div>
+              <div class="form-group">
+                <label for="client-phone">Phone</label>
+                <input type="tel" id="client-phone" />
+              </div>
+              <div class="form-group" style="grid-column:1 / -1;">
+                <label for="client-address">Address</label>
+                <input type="text" id="client-address" />
+              </div>
+              <div class="form-group">
+                <label for="client-status">Payment Status</label>
+                <select id="client-status">
+                  <option value="">Unknown</option>
+                  <option value="paid">Paid</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.75rem; margin-top:1rem; flex-wrap:wrap;">
+              <button type="submit" class="btn-action view" id="client-save-btn">Save</button>
+              <button type="button" class="btn-action edit" id="client-cancel-btn">Cancel</button>
+              <button type="button" class="btn-action export" id="client-delete-btn">Delete</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </main>
   </div>
 

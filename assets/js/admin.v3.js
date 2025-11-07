@@ -6,6 +6,20 @@
  * Handles authentication, dynamic data loading, and CRUD operations.
  */
 const API_BASE_URL = '/api';
+// Toast utility
+function showToast(message, type='info', timeout=3500){
+    let container = document.querySelector('.toast-container');
+    if(!container){
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const el = document.createElement('div');
+    el.className = `toast ${type==='success'?'success': type==='error'?'error':''}`.trim();
+    el.textContent = message;
+    container.appendChild(el);
+    setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .4s'; setTimeout(()=> el.remove(), 600); }, timeout);
+}
 
 // --- LOGOUT LOGIC ---
 document.addEventListener('click', async (e) => {
@@ -100,11 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function renderRows(rows) {
             if (!rows.length) {
-                grTableBody.innerHTML = '<tr><td colspan="8">No requests found.</td></tr>';
+                grTableBody.innerHTML = '<tr><td colspan="10">No requests found.</td></tr>';
                 return;
             }
             grTableBody.innerHTML = rows.map(r => `
-                <tr>
+                <tr data-gr-id="${r.id}" data-json='${JSON.stringify(r).replace(/'/g,"&#39;")}'>
                     <td data-label="Date">${r.created_at?.slice(0,10) || ''}</td>
                     <td data-label="Organization">${r.org_name}</td>
                     <td data-label="Contact">${r.contact_name}</td>
@@ -112,9 +126,88 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td data-label="Phone">${r.phone || ''}</td>
                     <td data-label="Course">${r.course_type}</td>
                     <td data-label="#">${r.participants}</td>
-                    <td data-label="Status">${r.status}</td>
+                    <td data-label="Status">
+                        <select class="gr-status-select" aria-label="Status for ${r.org_name}">
+                            ${['new','contacted','scheduled','closed'].map(s=>`<option value="${s}" ${s===r.status?'selected':''}>${s}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td data-label="Notes" class="gr-notes-cell">
+                        <div class="notes-wrapper">
+                            <span class="notes-text">${(r.notes||'').replace(/</g,'&lt;') || '<em>No notes</em>'}</span>
+                            <button type="button" class="btn-action edit gr-edit-notes" aria-label="Edit notes">Edit</button>
+                        </div>
+                    </td>
+                    <td data-label="Actions"><button class="btn-action view gr-save-row" type="button">Save</button></td>
                 </tr>
             `).join('');
+        }
+
+        grTableBody.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.gr-edit-notes');
+            if(editBtn){
+                const tr = editBtn.closest('tr');
+                const cell = tr.querySelector('.gr-notes-cell');
+                if(cell.querySelector('textarea')) return; // already editing
+                const current = tr.querySelector('.notes-text')?.innerHTML.replace(/<em>No notes<\/em>/,'') || '';
+                cell.innerHTML = `<textarea class="gr-notes-textarea" rows="3" style="width:100%;">${current.replace(/&lt;/g,'<')}</textarea>
+                <div style="margin-top:.4rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+                    <button type="button" class="btn-action view gr-notes-save">Save Notes</button>
+                    <button type="button" class="btn-action edit gr-notes-cancel">Cancel</button>
+                </div>`;
+            }
+            const saveNotes = e.target.closest('.gr-notes-save');
+            if(saveNotes){
+                const tr = saveNotes.closest('tr');
+                const ta = tr.querySelector('.gr-notes-textarea');
+                const val = ta.value.trim();
+                const spanHtml = val ? val.replace(/</g,'&lt;') : '<em>No notes</em>';
+                tr.querySelector('.gr-notes-cell').innerHTML = `<div class="notes-wrapper"><span class="notes-text">${spanHtml}</span><button type="button" class="btn-action edit gr-edit-notes">Edit</button></div>`;
+            }
+            const cancelNotes = e.target.closest('.gr-notes-cancel');
+            if(cancelNotes){
+                const tr = cancelNotes.closest('tr');
+                const raw = tr.getAttribute('data-json');
+                try {
+                    const data = JSON.parse(raw.replace(/&#39;/g,'"'));
+                    const spanHtml = data.notes ? data.notes.replace(/</g,'&lt;') : '<em>No notes</em>';
+                    tr.querySelector('.gr-notes-cell').innerHTML = `<div class="notes-wrapper"><span class="notes-text">${spanHtml}</span><button type="button" class="btn-action edit gr-edit-notes">Edit</button></div>`;
+                } catch(_){}
+            }
+            const saveRow = e.target.closest('.gr-save-row');
+            if(saveRow){
+                const tr = saveRow.closest('tr');
+                const id = tr.getAttribute('data-gr-id');
+                const statusSel = tr.querySelector('.gr-status-select');
+                const notesSpan = tr.querySelector('.notes-text');
+                const notesVal = notesSpan ? notesSpan.textContent.replace(/<em>No notes<\/em>/,'').trim() : '';
+                saveGroupRequest(id, statusSel.value, notesVal, tr, saveRow);
+            }
+        });
+
+        async function saveGroupRequest(id, status, notes, tr, btn){
+            if(!id) return;
+            const original = btn.textContent; btn.disabled=true; btn.textContent='Saving...';
+            try {
+                let res = await fetch(`${API_BASE_URL}/group_request.php?id=${encodeURIComponent(id)}`, {
+                    method:'PUT', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
+                    body: JSON.stringify({ status, notes })
+                });
+                if(!res.ok && (res.status===405 || res.status===400 || res.status===500)){
+                    res = await fetch(`${API_BASE_URL}/group_request.php?id=${encodeURIComponent(id)}`, {
+                        method:'POST', headers:{'Content-Type':'application/json','X-HTTP-Method-Override':'PUT'}, credentials:'same-origin',
+                        body: JSON.stringify({ status, notes, _method:'PUT' })
+                    });
+                }
+                const json = await res.json().catch(()=>({success:false,message:'Bad JSON'}));
+                if(!res.ok || !json.success) throw new Error(json.message||'Update failed');
+                // update stored json
+                const raw = tr.getAttribute('data-json');
+                let data = {};
+                try { data = JSON.parse(raw.replace(/&#39;/g,'"')) || {}; } catch(_){}
+                data.status = status; data.notes = notes;
+                tr.setAttribute('data-json', JSON.stringify(data).replace(/'/g,'&#39;'));
+                showToast('Saved', 'success');
+            } catch(err){ showToast(err.message,'error'); } finally { btn.disabled=false; btn.textContent=original; }
         }
 
         document.getElementById('gr-filter-form')?.addEventListener('submit', (e) => {
@@ -164,13 +257,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load roster');
                 const rows = json.data || [];
                 if (!rows.length) {
-                    clientsTbody.innerHTML = '<tr><td colspan="7">No clients found for this class.</td></tr>';
+                    clientsTbody.innerHTML = '<tr><td colspan="8">No clients found for this class.</td></tr>';
                     return;
                 }
                 const meta = rows[0];
                 rosterTitle.textContent = `Roster: ${meta.course_type} — ${meta.start_datetime?.slice(0,16) || ''}`;
                 clientsTbody.innerHTML = rows.map((r,i) => `
-                    <tr>
+                    <tr data-client-id="${r.id}" data-json='${JSON.stringify(r).replace(/'/g,"&#39;")}'>
                         <td data-label="#">${i+1}</td>
                         <td data-label="Full Name">${r.full_name}</td>
                         <td data-label="DOB">${r.dob || ''}</td>
@@ -178,11 +271,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td data-label="Phone">${r.phone || ''}</td>
                         <td data-label="Address">${r.address || ''}</td>
                         <td data-label="Status">${r.payment_status || ''}</td>
+                        <td data-label="Actions"><button class="btn-action edit js-edit-client" type="button">Edit</button></td>
                     </tr>
                 `).join('');
+                attachClientEditButtons();
             } catch (e) {
                 console.error(e);
-                clientsTbody.innerHTML = '<tr><td colspan="7">Error loading roster.</td></tr>';
+                clientsTbody.innerHTML = '<tr><td colspan="8">Error loading roster.</td></tr>';
             }
         }
 
@@ -204,6 +299,78 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         loadClassesForFilter();
+        // Client edit modal logic
+        const clientModal = document.getElementById('edit-client-modal');
+        const clientEditForm = document.getElementById('client-edit-form');
+        const clientCancelBtn = document.getElementById('client-cancel-btn');
+        const clientDeleteBtn = document.getElementById('client-delete-btn');
+        function openClientModal(data){
+            if(!clientModal) return;
+            clientModal.classList.remove('hidden');
+            document.getElementById('client-edit-id').value = data.id;
+            document.getElementById('client-full-name').value = data.full_name || '';
+            document.getElementById('client-dob').value = data.dob || '';
+            document.getElementById('client-email').value = data.email || '';
+            document.getElementById('client-phone').value = data.phone || '';
+            document.getElementById('client-address').value = data.address || '';
+            document.getElementById('client-status').value = (data.payment_status||'');
+        }
+        function closeClientModal(){ clientModal?.classList.add('hidden'); }
+        clientCancelBtn?.addEventListener('click', closeClientModal);
+        function attachClientEditButtons(){
+            clientsTbody.querySelectorAll('.js-edit-client').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tr = btn.closest('tr');
+                    const raw = tr.getAttribute('data-json');
+                    try { const data = JSON.parse(raw.replace(/&#39;/g,'"')); openClientModal(data); } catch(err){ console.error('Parse client row failed', err); }
+                });
+            });
+        }
+        clientEditForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('client-edit-id').value;
+            const full_name = document.getElementById('client-full-name').value.trim();
+            const dob = document.getElementById('client-dob').value;
+            const email = document.getElementById('client-email').value.trim();
+            const phone = document.getElementById('client-phone').value.trim();
+            const address = document.getElementById('client-address').value.trim();
+            const payment_status = document.getElementById('client-status').value;
+            const btn = document.getElementById('client-save-btn');
+            const original = btn.textContent; btn.disabled=true; btn.textContent='Saving...';
+            try {
+                let res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}`, {
+                    method:'PUT', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
+                    body: JSON.stringify({ full_name, dob, email, phone, address, payment_status })
+                });
+                if(!res.ok && (res.status===405 || res.status===400 || res.status===500)){
+                    res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}`, {
+                        method:'POST', headers:{'Content-Type':'application/json','X-HTTP-Method-Override':'PUT'}, credentials:'same-origin',
+                        body: JSON.stringify({ full_name, dob, email, phone, address, payment_status, _method:'PUT' })
+                    });
+                }
+                const json = await res.json().catch(()=>({success:false,message:'Bad JSON'}));
+                if(!res.ok || !json.success) throw new Error(json.message||'Update failed');
+                closeClientModal();
+                if(classSelect.value) loadRoster(classSelect.value);
+                showToast('Client updated','success');
+            } catch(err){ showToast(err.message,'error'); } finally { btn.disabled=false; btn.textContent=original; }
+        });
+        clientDeleteBtn?.addEventListener('click', async () => {
+            const id = document.getElementById('client-edit-id').value;
+            if(!id) return; if(!confirm('Delete this client?')) return;
+            clientDeleteBtn.disabled=true;
+            try {
+                let res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}`, { method:'DELETE', credentials:'same-origin' });
+                if(!res.ok && (res.status===405 || res.status===400 || res.status===500)){
+                    res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}&_method=DELETE`, { method:'POST', credentials:'same-origin', headers:{'X-HTTP-Method-Override':'DELETE'} });
+                }
+                const json = await res.json().catch(()=>({success:false,message:'Bad JSON'}));
+                if(!res.ok || !json.success) throw new Error(json.message||'Delete failed');
+                closeClientModal();
+                if(classSelect.value) loadRoster(classSelect.value); else loadClassesForFilter();
+                showToast('Client deleted','success');
+            } catch(err){ showToast(err.message,'error'); } finally { clientDeleteBtn.disabled=false; }
+        });
     }
 
     // Classes page: create and list
@@ -343,6 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(!res.ok || !json.success) throw new Error(json.message || 'Failed to update class');
                 closeModal();
                 loadClasses();
+                showToast('Class updated','success');
             } catch(err){ alert(err.message); } finally { btn.disabled = false; btn.textContent = original; }
         });
         deleteBtn?.addEventListener('click', async () => {
@@ -361,6 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(!res.ok || !json.success) throw new Error(json.message || 'Delete failed');
                 closeModal();
                 loadClasses();
+                showToast('Class deleted','success');
             } catch(err){ alert(err.message); } finally { deleteBtn.disabled = false; }
         });
     }
