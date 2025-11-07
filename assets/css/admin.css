@@ -222,6 +222,23 @@ body {
     opacity: 0.85;
 }
 
+/* Compact admin layout to tighten vertical spacing */
+body.admin-compact .main-content { padding: 0.85rem var(--spacing-md) !important; }
+body.admin-compact .admin-header { margin-bottom: 0.85rem; padding-bottom: 0.5rem; }
+body.admin-compact .summary-cards { gap: 0.75rem; margin-bottom: 0.9rem; }
+body.admin-compact .dashboard-table-section { padding: 0.75rem; }
+body.admin-compact .class-summary-table, 
+body.admin-compact .client-data-table { margin-top: 0.5rem; }
+body.admin-compact .class-management-form, 
+body.admin-compact .client-filter-form { padding: 0.9rem; }
+body.admin-compact .form-grid { gap: 0.75rem; }
+body.admin-compact .form-group { margin-bottom: 0.6rem; }
+body.admin-compact .btn-submit-class { margin-top: 0.75rem; }
+@media (max-width: 768px){
+    /* Ensure compact spacing applies on mobile despite inline rules */
+    body.admin-compact .main-content { padding: 0.75rem !important; }
+}
+
 /* Summary Cards */
 .summary-cards {
     display: grid;
