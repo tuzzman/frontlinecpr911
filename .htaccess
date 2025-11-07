@@ -26,5 +26,14 @@ DirectoryIndex index.html
   RewriteRule ^assets/css/style\.[0-9A-Za-z_.-]+\.css$ assets/css/style.css [L,NC]
 </IfModule>
 
+# Prevent HTML from being cached by CDN/browsers so new pages deploy immediately
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+</IfModule>
+
 # Security and convenience
 Options -Indexes
