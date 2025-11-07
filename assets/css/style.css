@@ -185,6 +185,12 @@ h1, h2, h3, h4 {
     font-weight: 700;
 }
 
+/* Subtle depth for primary headlines */
+h1 {
+    /* Light layered shadow improves legibility without looking blurry */
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), 0 2px 3px rgba(0, 0, 0, 0.15);
+}
+
 /* Emphasis on high-contrast for readability */
 p {
     margin-bottom: var(--spacing-md);
