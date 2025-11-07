@@ -41,7 +41,7 @@ jobs:
           local-dir: ./
           server-dir: /domains/frontlinecpr911.com/public_html/
           log-level: verbose
-          dangerous-clean-slate: true
+          dangerous-clean-slate: false
           exclude: |
             **/.git**
             **/node_modules/**
