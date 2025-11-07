@@ -323,12 +323,15 @@ body {
 
 /* Mobile Adjustments for Dashboard - Hiding Sidebar and table headers */
 @media (max-width: 768px) {
-    .sidebar {
-        display: none; /* Hide sidebar on small screens */
-    }
+    /* Ensure the layout collapses correctly on mobile */
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body { display: block; }
+    .admin-wrapper { display: block; width: 100%; }
+    .sidebar { display: none !important; }
+    .main-content { width: 100% !important; padding: var(--spacing-md) !important; margin: 0 !important; }
 
     /* Show the topbar and mobile nav on small screens */
-    .admin-topbar { display: block; }
+    .admin-topbar { display: block; position: sticky; top: 0; left: 0; right: 0; }
 
     .summary-cards {
         grid-template-columns: 1fr; /* Stack cards vertically */
@@ -370,10 +373,8 @@ body {
         text-align: left;
     }
 
-    /* Ensure full-width layout on mobile (prevent phantom left column) */
-    .admin-wrapper { flex-direction: column; }
-    .main-content { width: 100%; padding: var(--spacing-md); }
-    body { overflow-x: hidden; }
+    /* Safety: remove any grid/flex that might be set elsewhere */
+    .admin-wrapper, .main-content { float: none; clear: both; }
 }
 /*
  * APPEND TO: assets/css/admin.css
