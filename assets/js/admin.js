@@ -2,237 +2,255 @@
  * FRONTLINECPR911 ADMIN DASHBOARD JAVASCRIPT
  * Handles authentication, dynamic data loading, and CRUD operations.
  */
-const API_BASE_URL = 'https://frontlinecpr911.com/api'; // *** Set your backend URL here ***
+const API_BASE_URL = '/api';
 
-// --- LOGOUT LOGIC (Runs on all pages where .logout-link exists) ---
-const logoutLink = document.querySelector('.logout-link');
-
-if (logoutLink) {
-    logoutLink.addEventListener('click', async (e) => {
-        e.preventDefault();
-        
-        // Use POST for logout actions, although the body is empty
-        try {
-            const response = await fetch(`${API_BASE_URL}/logout.php`, {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
-            });
-
-            // Redirect regardless of response, as PHP should destroy the session cookie
-            window.location.href = '../admin/login.html'; 
-
-        } catch (error) {
-            console.error('Logout Network Error:', error);
-            window.location.href = '../admin/login.html';
-        }
-    });
-}
+// --- LOGOUT LOGIC ---
+document.addEventListener('click', async (e) => {
+    const link = e.target.closest('.logout-link, #logout');
+    if (!link) return;
+    e.preventDefault();
+    try {
+        await fetch(`${API_BASE_URL}/logout.php`, { method: 'POST' });
+    } catch (_) {}
+    window.location.href = 'login.html';
+});
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initial Authentication Check (Placeholder)
-    function checkAuth() {
-        // ...
+    async function checkAuthIfNeeded() {
+        const requiresAuth = document.querySelector('[data-requires-auth]');
+        if (!requiresAuth) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/auth.php`, { credentials: 'same-origin' });
+            if (!res.ok) throw new Error('unauthorized');
+        } catch (_) {
+            window.location.href = 'login.html';
+        }
     }
-    checkAuth();
+    checkAuthIfNeeded();
 
-    // -------------------------------------------------------------------
-    // 2. ADMIN LOGIN SUBMISSION LOGIC (Runs ONLY on login.html)
-    // -------------------------------------------------------------------
+    // Login page logic
     const loginForm = document.querySelector('.login-form');
-
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const loginButton = document.querySelector('.login-button');
-            
-            loginButton.textContent = 'Logging in...';
-            loginButton.disabled = true;
-
-            // FIX: Define dataToSend with correct variables before fetch
-            const dataToSend = {
-                username: username,
-                password: password
-            };
-
+            const btn = loginForm.querySelector('.login-button');
+            btn.disabled = true;
+            const original = btn.textContent;
+            btn.textContent = 'Logging in...';
             try {
-                const response = await fetch(`${API_BASE_URL}/auth.php`, { 
+                const res = await fetch(`${API_BASE_URL}/auth.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dataToSend) // Now correctly defined
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'same-origin'
                 });
-
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    window.location.href = 'dashboard.html';
-                } else {
-                    alert(result.message || 'Login failed. Please try again.');
-                    loginButton.textContent = 'Log In';
-                    loginButton.disabled = false;
-                }
-            } catch (error) {
-                console.error('Network Error:', error);
-                alert('An unexpected error occurred. Please try again later.');
-                loginButton.textContent = 'Log In';
-                loginButton.disabled = false;
-            }
-        });
-    }
-    
-    // -------------------------------------------------------------------
-    // 3. CLASS MANAGEMENT (CRUD) LOGIC (Runs ONLY on add-class.html)
-    // -------------------------------------------------------------------
-    const classForm = document.querySelector('.class-management-form');
-    
-    if (classForm) {
-        classForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = Object.fromEntries(new FormData(classForm).entries());
-            
-            // Format data types correctly
-            formData.classDate = formData.class_date;
-            formData.startTime = formData.class_time;
-            formData.price = parseFloat(formData.price);
-            formData.maxCapacity = parseInt(formData.capacity, 10);
-            formData.isPublished = formData.is_published === 'on';
-            
-            const url = `${API_BASE_URL}/classes.php`; // Use classes.php endpoint
-            const method = 'POST';
-            
-            try {
-                const response = await fetch(url, { 
-                    method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-
-                const result = await response.json();
-
-                if (!response.ok || !result.id) { // Check for successful creation/update
-                    throw new Error(result.message || 'Failed to save class.');
-                }
-                
-                alert(`Class successfully ${method === 'POST' ? 'created' : 'updated'}!`);
+                const result = await res.json();
+                if (!res.ok || !result.success) throw new Error(result.message || 'Login failed');
                 window.location.href = 'dashboard.html';
-
-            } catch (error) {
-                console.error('Error saving class:', error);
-                alert('Error: ' + error.message);
+            } catch (err) {
+                alert(err.message);
+                btn.disabled = false;
+                btn.textContent = original;
             }
         });
     }
 
-    // -------------------------------------------------------------------
-    // 4. CLIENT LIST LOGIC (Runs ONLY on client-list.html)
-    // -------------------------------------------------------------------
-    
-    // FIX: Declare and check element existence BEFORE using them
-    const filterForm = document.querySelector('.client-filter-form');
-    
-    if (filterForm) { 
-        // Declare all other variables safely inside this block
-        const classSelect = document.getElementById('filter_class');
-        
-        // FIX: Use a safer selector for rosterTitle (avoids reading nextElementSibling of null)
-        const rosterTitle = document.querySelector('.dashboard-table-section h2'); 
-        
-        const clientTableBody = document.querySelector('.client-data-table tbody');
+    // Dashboard: group requests list
+    const grTableBody = document.getElementById('gr-tbody');
+    if (grTableBody) {
+        const statusFilter = document.getElementById('gr-status');
+        const fromInput = document.getElementById('gr-from');
+        const toInput = document.getElementById('gr-to');
+        const exportBtn = document.getElementById('export-gr');
 
-        if (classSelect && rosterTitle && clientTableBody) {
-        
-        // A. Load Classes for the Filter Dropdown
-            async function loadClassFilterOptions() {
+        async function loadGroupRequests() {
+            const params = new URLSearchParams();
+            if (statusFilter && statusFilter.value) params.set('status', statusFilter.value);
+            if (fromInput && fromInput.value) params.set('from', fromInput.value);
+            if (toInput && toInput.value) params.set('to', toInput.value);
             try {
-                const response = await fetch(`${API_BASE_URL}/clients.php?listType=select`, {});
-                if (!response.ok) throw new Error('Failed to load classes for filter.');
-
-                const result = await response.json();
-                const classes = result.classes;
-                
-                classSelect.innerHTML = `<option value="all">-- View All Upcoming Classes --</option>`;
-
-                classes.forEach(cls => {
-                    const dateStr = new Date(cls.class_datetime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    const option = document.createElement('option');
-                    option.value = cls.class_id;
-                    option.textContent = `${dateStr} - ${cls.course_name} (${cls.registrations} Clients)`;
-                    classSelect.appendChild(option);
-                });
-                
-                const initialClassId = classes.length > 0 ? classes[0].class_id : 'all';
-                classSelect.value = initialClassId;
-                const initialClassName = classes.length > 0 ? classes[0].course_name : 'All Clients';
-                
-                loadClientData(initialClassId, initialClassName);
-
-            } catch (error) {
-                console.error("Error loading class filter:", error);
+                const res = await fetch(`${API_BASE_URL}/group_request.php?${params.toString()}`, { credentials: 'same-origin' });
+                const json = await res.json();
+                if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load');
+                renderRows(json.data || []);
+            } catch (err) {
+                console.error(err);
+                grTableBody.innerHTML = '<tr><td colspan="8">Error loading data.</td></tr>';
             }
-            }
-        
-        // B. Load Client Data for the Table
-            async function loadClientData(classId, className) {
-            let url = `${API_BASE_URL}/clients.php`;
-            if (classId) {
-                url += `?classId=${classId}`;
-            }
+        }
 
-            try {
-                const response = await fetch(url, {});
-                if (!response.ok) throw new Error('Failed to load client data.');
-
-                const clients = await response.json();
-                renderClientTable(clients, className);
-
-            } catch (error) {
-                console.error("Error loading client data:", error);
-                clientTableBody.innerHTML = `<tr><td colspan="6">Error fetching data. Check server connection.</td></tr>`;
-            }
-            }
-        
-        // C. Render the Table Rows 
-            function renderClientTable(clients, className) {
-            clientTableBody.innerHTML = '';
-            rosterTitle.textContent = `Roster for: ${className || 'All Clients'}`;
-
-            if (clients.length === 0) {
-                clientTableBody.innerHTML = `<tr><td colspan="6">No clients registered yet for this selection.</td></tr>`;
+        function renderRows(rows) {
+            if (!rows.length) {
+                grTableBody.innerHTML = '<tr><td colspan="8">No requests found.</td></tr>';
                 return;
             }
-
-            clients.forEach((client, index) => {
-                const row = document.createElement('tr');
-                const certName = client.full_name;
-                const dob = client.date_of_birth; 
-                const statusClass = client.payment_status.toLowerCase();
-
-                row.innerHTML = `
-                    <td data-label="ID">${client.class_id}-${index + 1}</td>
-                    <td data-label="Full Name (Cert.)">**${certName}**</td>
-                    <td data-label="Date of Birth">${dob}</td>
-                    <td data-label="Email">${client.email}</td>
-                    <td data-label="Mailing Address">${client.address}</td>
-                    <td data-label="Status"><span class="${statusClass}">${client.payment_status}</span></td>
-                `;
-                clientTableBody.appendChild(row);
-            });
-            }
-
-        // D. Attach Filter Event Listener
-            filterForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const classId = classSelect.value;
-            const className = classSelect.options[classSelect.selectedIndex].text.split(' (')[0];
-            loadClientData(classId, className);
-            });
-
-        // Initial Load
-            loadClassFilterOptions();
+            grTableBody.innerHTML = rows.map(r => `
+                <tr>
+                    <td data-label="Date">${r.created_at?.slice(0,10) || ''}</td>
+                    <td data-label="Organization">${r.org_name}</td>
+                    <td data-label="Contact">${r.contact_name}</td>
+                    <td data-label="Email">${r.email}</td>
+                    <td data-label="Phone">${r.phone || ''}</td>
+                    <td data-label="Course">${r.course_type}</td>
+                    <td data-label="#">${r.participants}</td>
+                    <td data-label="Status">${r.status}</td>
+                </tr>
+            `).join('');
         }
-       
-    } // End of filterForm check
+
+        document.getElementById('gr-filter-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            loadGroupRequests();
+        });
+
+        exportBtn?.addEventListener('click', () => {
+            const params = new URLSearchParams();
+            if (statusFilter && statusFilter.value) params.set('status', statusFilter.value);
+            if (fromInput && fromInput.value) params.set('from', fromInput.value);
+            if (toInput && toInput.value) params.set('to', toInput.value);
+            window.location.href = `${API_BASE_URL}/export.php?type=group_requests&${params.toString()}`;
+        });
+
+        loadGroupRequests();
+    }
+    
+    // Clients & Rosters page
+    const clientsTbody = document.getElementById('clients-tbody');
+    const classSelect = document.getElementById('clients-class');
+    if (clientsTbody && classSelect) {
+        async function loadClassesForFilter() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/clients.php?listType=classes`, { credentials: 'same-origin' });
+                const json = await res.json();
+                if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load classes');
+                classSelect.innerHTML = '<option value="">-- Select Class --</option>';
+                (json.classes || []).forEach(c => {
+                    const dt = c.start_datetime ? new Date(c.start_datetime.replace(' ', 'T')) : null;
+                    const labelDate = dt ? dt.toLocaleString() : '(unscheduled)';
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = `${labelDate} • ${c.course_type} (${c.registrations})`;
+                    classSelect.appendChild(opt);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadRoster(classId) {
+            const rosterTitle = document.getElementById('roster-title');
+            try {
+                const res = await fetch(`${API_BASE_URL}/clients.php?classId=${encodeURIComponent(classId)}`, { credentials: 'same-origin' });
+                const json = await res.json();
+                if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load roster');
+                const rows = json.data || [];
+                if (!rows.length) {
+                    clientsTbody.innerHTML = '<tr><td colspan="7">No clients found for this class.</td></tr>';
+                    return;
+                }
+                const meta = rows[0];
+                rosterTitle.textContent = `Roster: ${meta.course_type} — ${meta.start_datetime?.slice(0,16) || ''}`;
+                clientsTbody.innerHTML = rows.map((r,i) => `
+                    <tr>
+                        <td data-label="#">${i+1}</td>
+                        <td data-label="Full Name">${r.full_name}</td>
+                        <td data-label="DOB">${r.dob || ''}</td>
+                        <td data-label="Email">${r.email || ''}</td>
+                        <td data-label="Phone">${r.phone || ''}</td>
+                        <td data-label="Address">${r.address || ''}</td>
+                        <td data-label="Status">${r.payment_status || ''}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+                clientsTbody.innerHTML = '<tr><td colspan="7">Error loading roster.</td></tr>';
+            }
+        }
+
+        document.getElementById('clients-filter-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = classSelect.value;
+            if (id) loadRoster(id);
+        });
+
+        document.getElementById('export-roster-pdf')?.addEventListener('click', () => {
+            const id = classSelect.value;
+            if (!id) return alert('Select a class first');
+            window.location.href = `${API_BASE_URL}/export.php?type=roster&classId=${encodeURIComponent(id)}`;
+        });
+        document.getElementById('export-roster-csv')?.addEventListener('click', () => {
+            const id = classSelect.value;
+            if (!id) return alert('Select a class first');
+            window.location.href = `${API_BASE_URL}/export.php?type=roster&classId=${encodeURIComponent(id)}&format=csv`;
+        });
+
+        loadClassesForFilter();
+    }
+
+    // Classes page: create and list
+    const classCreateForm = document.getElementById('class-create-form');
+    const classesTbody = document.getElementById('classes-tbody');
+    if (classCreateForm || classesTbody) {
+        async function loadClasses() {
+            if (!classesTbody) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/classes.php`, { credentials: 'same-origin' });
+                const json = await res.json();
+                if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load classes');
+                const rows = json.data || [];
+                if (!rows.length) {
+                    classesTbody.innerHTML = '<tr><td colspan="6">No classes yet.</td></tr>';
+                    return;
+                }
+                classesTbody.innerHTML = rows.map(c => `
+                    <tr>
+                        <td data-label="ID">${c.id}</td>
+                        <td data-label="Course">${c.course_type}</td>
+                        <td data-label="Date/Time">${c.start_datetime || ''}</td>
+                        <td data-label="Location">${c.location || ''}</td>
+                        <td data-label="Price">${c.price ?? ''}</td>
+                        <td data-label="Capacity">${c.max_capacity ?? ''}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+                classesTbody.innerHTML = '<tr><td colspan="6">Error loading classes.</td></tr>';
+            }
+        }
+
+        classCreateForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const course_type = document.getElementById('cc-course').value;
+            const date = document.getElementById('cc-date').value;
+            const time = document.getElementById('cc-time').value;
+            const start_datetime = (date && time) ? `${date} ${time}:00` : '';
+            const location = document.getElementById('cc-location').value;
+            const price = document.getElementById('cc-price').value;
+            const max_capacity = document.getElementById('cc-capacity').value;
+            const notes = document.getElementById('cc-notes').value;
+            const btn = classCreateForm.querySelector('button[type="submit"]');
+            const original = btn.textContent;
+            btn.disabled = true; btn.textContent = 'Saving...';
+            try {
+                const res = await fetch(`${API_BASE_URL}/classes.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ course_type, start_datetime, location, price, max_capacity, notes })
+                });
+                const json = await res.json();
+                if (!res.ok || !json.success) throw new Error(json.message || 'Failed to create class');
+                classCreateForm.reset();
+                loadClasses();
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                btn.disabled = false; btn.textContent = original;
+            }
+        });
+
+        loadClasses();
+    }
 });

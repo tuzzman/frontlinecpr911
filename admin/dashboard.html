@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard • FrontlineCPR911</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/admin.css" />
+</head>
+<body>
+  <div class="admin-wrapper" data-requires-auth>
+    <aside class="sidebar">
+      <div class="logo-admin">
+        <h2>FrontlineCPR911</h2>
+        <p>Admin</p>
+      </div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="#" class="active">Group Requests</a></li>
+          <!-- Future: <li><a href="clients.html">Clients</a></li> -->
+          <li><a href="#" class="logout-link" id="logout">Logout</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="admin-header">
+        <h1>Dashboard</h1>
+      </header>
+
+      <section class="dashboard-table-section">
+        <div style="display:flex; align-items: end; gap: 1rem; flex-wrap: wrap;">
+          <form id="gr-filter-form" class="client-filter-form" style="flex:1 1 600px;">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="gr-status">Status</label>
+                <select id="gr-status">
+                  <option value="">All</option>
+                  <option value="new">New</option>
+                  <option value="contacted">Contacted</option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="gr-from">From</label>
+                <input type="date" id="gr-from" />
+              </div>
+              <div class="form-group">
+                <label for="gr-to">To</label>
+                <input type="date" id="gr-to" />
+              </div>
+            </div>
+            <button class="btn-action view" type="submit" style="margin-top: 0.5rem;">Apply Filters</button>
+          </form>
+          <button id="export-gr" class="btn-action export">Export CSV</button>
+        </div>
+
+        <table class="class-summary-table" style="margin-top: 1rem;">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Organization</th>
+              <th>Contact</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Course</th>
+              <th>#</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="gr-tbody">
+            <tr><td colspan="8">Loading...</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="../assets/js/admin.js"></script>
+</body>
+</html>

@@ -34,3 +34,49 @@ function pdo_or_503(): ?PDO {
         json_response(503, [ 'success' => false, 'message' => 'Database unavailable', 'error' => $e->getMessage() ]);
     }
 }
+
+// -------- Sessions & Auth helpers ---------
+function start_session_once(): void {
+    if (session_status() === PHP_SESSION_NONE) {
+        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/',
+            'domain' => '',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+        session_start();
+    }
+}
+
+function current_user(PDO $pdo): ?array {
+    start_session_once();
+    // Optional fingerprint validation (IP + UA)
+    $fp = $_SESSION['fp'] ?? null;
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $expect = hash('sha256', $ip . '|' . $ua);
+    if ($fp && !hash_equals($fp, $expect)) {
+        // Invalidate session if fingerprint changes
+        $_SESSION = [];
+        session_destroy();
+        return null;
+    }
+
+    $uid = $_SESSION['uid'] ?? null;
+    if (!$uid) return null;
+    $stmt = $pdo->prepare('SELECT id, email, role, created_at FROM users WHERE id = :id');
+    $stmt->execute([':id' => $uid]);
+    $user = $stmt->fetch();
+    return $user ?: null;
+}
+
+function require_admin(PDO $pdo): array {
+    $u = current_user($pdo);
+    if (!$u) {
+        json_response(401, [ 'success' => false, 'message' => 'Unauthorized' ]);
+    }
+    return $u;
+}

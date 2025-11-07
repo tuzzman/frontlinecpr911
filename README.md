@@ -76,3 +76,52 @@ Additions and maintenance
 Contact
 -------
 If you'd like me to add a LICENSE, CONTRIBUTING guide, switch to SFTP/rsync deploy, or create a CI test (lint or HTML validation), tell me which option and I will implement it.
+
+Admin setup (PHP API)
+---------------------
+The repo includes a lightweight PHP API under `/api` and database schema under `/db/schema.sql`.
+
+1) Create a MySQL/MariaDB database and user, then copy `api/config.sample.php` to `api/config.php` and fill in credentials.
+
+2) Import `db/schema.sql` into your database.
+
+3) First admin login: optionally set in `api/config.php`:
+
+	- `ALLOW_FIRST_ADMIN` to `true`
+	- `ADMIN_BOOTSTRAP_EMAIL` and `ADMIN_BOOTSTRAP_PASSWORD`
+
+	Then visit `/admin/login.html` and log in using those credentials. An admin user will be created on first login. Set `ALLOW_FIRST_ADMIN` back to `false` afterward.
+
+4) Endpoints:
+
+	- `POST /api/auth.php` — login `{ email, password }`
+	- `GET /api/auth.php` — current session user
+	- `POST /api/logout.php` — logout
+	- `POST /api/group_request.php` — public group training request submit
+	- `GET /api/group_request.php` — admin list with optional `status`, `from`, `to`
+	- `GET /api/export.php?type=group_requests` — CSV export with optional filters (`status`, `from`, `to`)
+		- `GET /api/clients.php?listType=classes` — classes for dropdown (admin)
+		- `GET /api/clients.php?classId=123` — roster for class 123 (admin)
+		- `GET /api/export.php?type=roster&classId=123` — PDF roster if Dompdf is installed; else HTML fallback
+		- `GET /api/export.php?type=roster&classId=123&format=csv` — CSV roster
+
+5) Admin UI:
+
+	- `/admin/login.html` — login form
+	- `/admin/dashboard.html` — group requests list with filters and CSV export
+		- `/admin/clients.html` — select a class to view roster; export PDF or CSV
+		- `/admin/classes.html` — create classes and view all classes
+
+`api/config.php` is ignored by git; keep secrets out of version control.
+
+Optional: PDF exports with Dompdf
+---------------------------------
+To enable server-side PDF for rosters, install Dompdf on your host so the class `Dompdf\\Dompdf` is available to PHP.
+
+Typical steps on shared hosting (without Composer):
+1. Download a release zip of Dompdf from https://github.com/dompdf/dompdf/releases
+2. Upload the `dompdf` folder to `/api/vendor/dompdf/`
+3. Add `require_once __DIR__ . '/vendor/dompdf/autoload.inc.php';` near the top of `api/export.php` (right after the `require_once _common.php`) or in a shared bootstrap.
+4. Visit `/admin/clients.html`, select a class, and click "Export Roster PDF".
+
+If Dompdf is not present, the endpoint will return a printable HTML roster as a fallback.

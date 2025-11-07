@@ -17,3 +17,9 @@ function get_pdo(): PDO {
     ];
     return new PDO($dsn, DB_USER, DB_PASS, $options);
 }
+
+// Optional: bootstrap first admin user if none exists
+// Set these in config.php only (do not commit secrets)
+const ALLOW_FIRST_ADMIN = false; // set to true temporarily for first login
+const ADMIN_BOOTSTRAP_EMAIL = 'tuzzman@gmail.com';
+const ADMIN_BOOTSTRAP_PASSWORD = 'CPR_2025@lafire';

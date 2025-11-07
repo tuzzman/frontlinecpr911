@@ -8,12 +8,15 @@
    For simple HTML/CSS, we will manually redefine key variables: */
 :root {
     --color-primary: #CC0000;
+    --color-primary-dark: #990000;
     --color-secondary: #1A1A1A;
     --color-background: #FFFFFF;
     --color-light-gray: #F4F4F4;
     --font-main: 'Roboto', sans-serif;
     --spacing-sm: 1rem;
     --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xs: 0.5rem;
     --radius-sm: 4px;
 }
 
