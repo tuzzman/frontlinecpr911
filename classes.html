@@ -50,6 +50,8 @@
             <h2>Request a Group Class Quote</h2>
             <p>Tell us about your organization and training needs. No set dates required—we’ll work with you to schedule a convenient session.</p>
 
+            <div id="group-form-banner" class="alert hidden" role="status" aria-live="polite"></div>
+
             <form id="group-request-form" class="registration-form">
                 <input type="hidden" name="requestType" value="group">
 
@@ -97,7 +99,7 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div id="address_field_group" class="form-group hidden">
                     <label for="address">If at your location, address/city</label>
                     <input type="text" id="address" name="address" placeholder="123 Example St, City, ZIP">
                 </div>

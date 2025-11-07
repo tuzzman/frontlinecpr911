@@ -166,7 +166,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------------
     // Group Request Form Submission
     // ----------------------------------------------------
+    const banner = document.getElementById('group-form-banner');
     if (groupRequestForm) {
+        // Conditional address toggle
+        const locationSelect = document.getElementById('location_pref');
+        const addressGroup = document.getElementById('address_field_group');
+        if (locationSelect && addressGroup) {
+            const updateAddressVisibility = () => {
+                const show = locationSelect.value === 'At your location';
+                addressGroup.classList.toggle('hidden', !show);
+                const addressInput = addressGroup.querySelector('input');
+                if (addressInput) addressInput.required = show;
+            };
+            updateAddressVisibility();
+            locationSelect.addEventListener('change', updateAddressVisibility);
+        }
+
         groupRequestForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = groupRequestForm.querySelector('.submit-btn');
@@ -175,6 +190,20 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
 
             const payload = Object.fromEntries(new FormData(groupRequestForm).entries());
+            // Minimal client-side validation: participants >= 1
+            const count = parseInt(payload.participants, 10);
+            if (Number.isNaN(count) || count < 1) {
+                if (banner) {
+                    banner.className = 'alert error';
+                    banner.textContent = 'Please enter at least 1 participant.';
+                    banner.classList.remove('hidden');
+                } else {
+                    alert('Please enter at least 1 participant.');
+                }
+                submitBtn.textContent = original;
+                submitBtn.disabled = false;
+                return;
+            }
             try {
                 // Attempt API submission to clients.php (group requests)
                 const resp = await fetch(`${API_BASE_URL}/clients.php`, {
@@ -185,8 +214,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 let result = {};
                 try { result = await resp.json(); } catch (_) {}
                 if (resp.ok && (result.success === undefined || result.success === true)) {
-                    alert('Thanks! Your group training request has been received. We will reach out to coordinate scheduling and a quote.');
+                    if (banner) {
+                        banner.className = 'alert success';
+                        banner.textContent = 'Thanks! Your group training request has been received. We will reach out to coordinate scheduling and a quote.';
+                        banner.classList.remove('hidden');
+                    } else {
+                        alert('Thanks! Your group training request has been received. We will reach out to coordinate scheduling and a quote.');
+                    }
                     groupRequestForm.reset();
+                    // reapply address field visibility after reset
+                    if (locationSelect) {
+                        locationSelect.value = '';
+                        const event = new Event('change');
+                        locationSelect.dispatchEvent(event);
+                    }
                 } else {
                     throw new Error(result.message || `Request failed (HTTP ${resp.status})`);
                 }
