@@ -497,6 +497,40 @@ body.admin-compact .btn-submit-class { margin-top: 0.75rem; }
 .btn-action.btn-loading, .btn-submit-class.btn-loading { opacity: 0.85; pointer-events: none; position: relative; }
 .btn-action.btn-loading::after, .btn-submit-class.btn-loading::after { content: ""; display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.9); border-right-color: transparent; border-radius: 50%; margin-left: .5rem; vertical-align: -2px; animation: admin-spin .8s linear infinite; }
 @keyframes admin-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+/* =============================
+   COMPACT FIELD DENSITY TUNING
+   ============================= */
+/* Inputs, selects, and textareas: reduce height/padding and font size */
+body.admin-compact .form-group label {
+    margin-bottom: 0.2rem;
+    font-size: 0.85rem;
+}
+body.admin-compact .form-group input:not([type="checkbox"]),
+body.admin-compact .form-group select,
+body.admin-compact .form-group textarea {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    border-radius: 3px;
+}
+/* Table density */
+body.admin-compact .class-summary-table th,
+body.admin-compact .class-summary-table td,
+body.admin-compact .client-data-table th,
+body.admin-compact .client-data-table td {
+    padding: 0.4rem 0.5rem;
+}
+/* Buttons smaller */
+body.admin-compact .btn-action,
+body.admin-compact .btn-submit-class {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.9rem;
+}
+/* Increase columns on larger screens to reduce vertical stacking */
+@media (min-width: 900px){
+    body.admin-compact .form-grid { grid-template-columns: repeat(3, 1fr); }
+}
 /*
  * APPEND TO: assets/css/admin.css
  * ------------------------------------------------ */
