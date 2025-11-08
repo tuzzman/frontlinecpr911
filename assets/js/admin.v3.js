@@ -211,7 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 try { data = JSON.parse(raw.replace(/&#39;/g,'"')) || {}; } catch(_){}
                 data.status = status; data.notes = notes;
                 tr.setAttribute('data-json', JSON.stringify(data).replace(/'/g,'&#39;'));
-                showToast('Saved', 'success');
+                // Recalculate summary metrics from current DOM rows
+                recalcGroupRequestMetrics();
+                showBanner('Saved');
             } catch(err){ showToast(err.message,'error'); } finally { btn.disabled=false; btn.textContent=original; btn.classList.remove('btn-loading'); }
         }
 
@@ -252,6 +254,31 @@ document.addEventListener('DOMContentLoaded', () => {
             rows.forEach(r=>{ if(tally[r.status]!==undefined) tally[r.status]++; });
             const set = (id,val)=>{ const el = document.getElementById(id); if(el) el.textContent = String(val); };
             set('metric-total', total); set('metric-new', tally.new); set('metric-contacted', tally.contacted); set('metric-scheduled', tally.scheduled); set('metric-closed', tally.closed);
+        }
+        function recalcGroupRequestMetrics(){
+            const rows = Array.from(grTableBody.querySelectorAll('tr[data-gr-id]'));
+            const tally = { new:0, contacted:0, scheduled:0, closed:0 };
+            rows.forEach(tr => {
+                const raw = tr.getAttribute('data-json');
+                if(!raw) return;
+                try {
+                    const data = JSON.parse(raw.replace(/&#39;/g,'"'));
+                    if(tally[data.status] !== undefined) tally[data.status]++;
+                } catch(_){ }
+            });
+            const total = rows.length;
+            const set = (id,val)=>{ const el = document.getElementById(id); if(el) el.textContent = String(val); };
+            set('metric-total', total); set('metric-new', tally.new); set('metric-contacted', tally.contacted); set('metric-scheduled', tally.scheduled); set('metric-closed', tally.closed);
+        }
+        function showBanner(msg){
+            let region = document.getElementById('gr-banner-region');
+            if(!region) return showToast(msg,'success');
+            const banner = document.createElement('div');
+            banner.className = 'admin-banner';
+            banner.textContent = msg;
+            region.innerHTML='';
+            region.appendChild(banner);
+            setTimeout(()=>{ banner.style.opacity='0'; banner.style.transition='opacity .4s'; setTimeout(()=>{ if(banner.parentNode===region) region.removeChild(banner); }, 500); }, 2500);
         }
     }
     

@@ -684,3 +684,6 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
 .toast.success { background: #155724; }
 .toast.error { background: #721c24; }
 .toast.warn { background: #856404; }
+
+/* Inline banner (above tables) */
+.admin-banner { background:#d1e7dd; color:#0f5132; border:1px solid #badbcc; padding: .5rem .75rem; border-radius: var(--radius-sm); margin: 0 0 .5rem 0; }
