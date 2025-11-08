@@ -135,49 +135,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 grTableBody.innerHTML = '<tr><td colspan="10">No requests found.</td></tr>';
                 return;
             }
-            grTableBody.innerHTML = rows.map(r => {
-                const safeJson = JSON.stringify(r).replace(/'/g,"&#39;");
-                return `
-                <tr data-gr-id="${r.id}" data-json='${safeJson}'>
-                    <td data-label="Date">${r.created_at?.slice(0,10) || ''}</td>
-                    <td data-label="Organization">${r.org_name}</td>
-                    <td data-label="Contact">${r.contact_name}</td>
-                    <td data-label="Email">${r.email}</td>
-                    <td data-label="Phone">${r.phone || ''}</td>
-                    <td data-label="Course">${r.course_type}</td>
-                    <td data-label="#">${r.participants}</td>
-                    <td data-label="Status">
-                        <select class="gr-status-select" aria-label="Status for ${r.org_name}">
-                            ${['new','contacted','scheduled','closed'].map(s=>`<option value="${s}" ${s===r.status?'selected':''}>${s}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td data-label="Notes" class="gr-notes-cell">
-                        <div class="notes-wrapper">
-                            <span class="notes-text">${(r.notes||'').replace(/</g,'&lt;') || '<em>No notes</em>'}</span>
-                            <button type="button" class="btn-action edit gr-edit-notes" aria-label="Edit notes">Edit</button>
-                        </div>
-                    </td>
-                    <td data-label="Actions">
-                        <div class="gr-actions-wrapper" style="display:flex;gap:.4rem;flex-wrap:wrap;">
-                            <button class="btn-action view gr-save-row" type="button" aria-label="Save row ${r.id}">Save</button>
-                        </div>
-                    </td>
-                </tr>`;
-            }).join('');
-            // Fallback: if any row missing a save button (edge case), append one
-            Array.from(grTableBody.querySelectorAll('tr[data-gr-id]')).forEach(tr => {
-                if(!tr.querySelector('.gr-save-row')){
-                    const actionsCell = tr.querySelector('td[data-label="Actions"]');
-                    if(actionsCell){
-                        const wrap = actionsCell.querySelector('.gr-actions-wrapper') || actionsCell;
-                        const btn = document.createElement('button');
-                        btn.type='button';
-                        btn.className='btn-action view gr-save-row';
-                        btn.textContent='Save';
-                        wrap.appendChild(btn);
-                    }
-                }
+            // Build rows using DOM APIs to avoid any template parsing anomalies
+            const frag = document.createDocumentFragment();
+            rows.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-gr-id', r.id);
+                tr.setAttribute('data-json', JSON.stringify(r).replace(/'/g,'&#39;'));
+                const cells = [
+                    ['Date', r.created_at?.slice(0,10) || ''],
+                    ['Organization', r.org_name],
+                    ['Contact', r.contact_name],
+                    ['Email', r.email],
+                    ['Phone', r.phone || ''],
+                    ['Course', r.course_type],
+                    ['#', r.participants]
+                ];
+                cells.forEach(([label,value]) => {
+                    const td = document.createElement('td');
+                    td.setAttribute('data-label', label);
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+                // Status select
+                const statusTd = document.createElement('td');
+                statusTd.setAttribute('data-label','Status');
+                const sel = document.createElement('select');
+                sel.className = 'gr-status-select';
+                sel.setAttribute('aria-label', `Status for ${r.org_name}`);
+                ['new','contacted','scheduled','closed'].forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s; opt.textContent = s; if(s===r.status) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+                statusTd.appendChild(sel); tr.appendChild(statusTd);
+                // Notes
+                const notesTd = document.createElement('td');
+                notesTd.className = 'gr-notes-cell';
+                notesTd.setAttribute('data-label','Notes');
+                const notesWrapper = document.createElement('div');
+                notesWrapper.className = 'notes-wrapper';
+                const span = document.createElement('span');
+                span.className = 'notes-text';
+                span.innerHTML = (r.notes||'').replace(/</g,'&lt;') || '<em>No notes</em>';
+                const editBtn = document.createElement('button');
+                editBtn.type='button'; editBtn.className='btn-action edit gr-edit-notes'; editBtn.setAttribute('aria-label','Edit notes'); editBtn.textContent='Edit';
+                notesWrapper.appendChild(span); notesWrapper.appendChild(editBtn); notesTd.appendChild(notesWrapper); tr.appendChild(notesTd);
+                // Actions
+                const actionsTd = document.createElement('td');
+                actionsTd.setAttribute('data-label','Actions');
+                const wrap = document.createElement('div');
+                wrap.className = 'gr-actions-wrapper';
+                wrap.style.display='flex'; wrap.style.gap='.4rem'; wrap.style.flexWrap='wrap';
+                const saveBtn = document.createElement('button');
+                saveBtn.type='button'; saveBtn.className='btn-action view gr-save-row'; saveBtn.textContent='Save'; saveBtn.setAttribute('aria-label', `Save row ${r.id}`);
+                wrap.appendChild(saveBtn); actionsTd.appendChild(wrap); tr.appendChild(actionsTd);
+                frag.appendChild(tr);
             });
+            grTableBody.innerHTML='';
+            grTableBody.appendChild(frag);
         }
 
         grTableBody.addEventListener('click', (e) => {

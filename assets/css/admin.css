@@ -306,6 +306,10 @@ body.admin-compact .btn-submit-class { margin-top: 0.75rem; }
     border-bottom: 1px solid var(--color-light-gray);
 }
 
+/* Ensure actions buttons always visible (defensive) */
+td[data-label="Actions"] .btn-action { display: inline-flex; align-items:center; }
+td[data-label="Actions"] { white-space: nowrap; }
+
 .class-summary-table th {
     background-color: var(--color-secondary);
     color: var(--color-background);
