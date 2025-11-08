@@ -279,18 +279,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (parent && getComputedStyle(parent).position === 'static') {
                     parent.style.position = 'relative';
                 }
+                // Apply minimum overlay styles to the region so placement is always correct
+                const rs = region.style;
+                rs.position = 'absolute';
+                rs.left = '0';
+                rs.right = '0';
+                rs.top = '.25rem';
+                rs.display = 'flex';
+                rs.justifyContent = 'center';
+                rs.pointerEvents = 'none';
+                rs.zIndex = '10';
             } catch(_) {}
             region.innerHTML = '';
             const banner = document.createElement('div');
             banner.className = 'admin-banner';
             banner.textContent = msg;
             // Inline minimal safety styles in case CSS cache lags
-            banner.style.background = '#d1e7dd';
-            banner.style.color = '#0f5132';
-            banner.style.border = '1px solid #badbcc';
+            banner.style.background = '#198754'; // strong success green
+            banner.style.color = '#ffffff';
+            banner.style.border = '1px solid #146c43';
             banner.style.padding = '.4rem .65rem';
             banner.style.borderRadius = '4px';
             banner.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
+            banner.style.pointerEvents = 'auto';
             region.appendChild(banner);
             // Fade out and clear without shifting layout
             setTimeout(()=>{
