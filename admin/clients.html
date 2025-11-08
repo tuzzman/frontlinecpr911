@@ -80,10 +80,12 @@
               </div>
             </form>
           </details>
-          <div style="display:flex; gap:.35rem; flex-wrap:wrap;">
+          <div style="display:flex; gap:.35rem; flex-wrap:wrap; align-items:center;">
             <button id="export-roster-pdf" class="btn-action export">PDF</button>
             <button id="export-roster-csv" class="btn-action export">CSV</button>
             <button id="show-roster-qr" class="btn-action view">QR</button>
+        <button id="add-client-btn" class="btn-action edit" type="button">Add Client</button>
+            <span id="capacity-remaining" style="font-size:.9rem; opacity:.85;"></span>
           </div>
         </div>
 
@@ -107,6 +109,19 @@
             <tr><td colspan="8">Select a class to load roster.</td></tr>
           </tbody>
         </table>
+        <div id="clients-pagination" style="display:flex; align-items:center; gap:.5rem; margin-top:.5rem; flex-wrap:wrap;">
+          <button type="button" id="clients-prev" class="btn-action edit" disabled>Prev</button>
+          <span id="clients-page-info" style="font-size:.9rem; opacity:.85;">Page 1/1</span>
+          <button type="button" id="clients-next" class="btn-action view" disabled>Next</button>
+          <label style="margin-left:.5rem; font-size:.9rem;">Per page
+            <select id="clients-page-size" style="margin-left:.25rem;">
+              <option value="10">10</option>
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </label>
+        </div>
       </section>
       <!-- Edit Client Modal -->
       <div id="edit-client-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="editClientTitle">
@@ -148,6 +163,46 @@
               <button type="submit" class="btn-action view" id="client-save-btn">Save</button>
               <button type="button" class="btn-action edit" id="client-cancel-btn">Cancel</button>
               <button type="button" class="btn-action export" id="client-delete-btn">Delete</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <!-- Add Client Modal -->
+      <div id="add-client-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="addClientTitle">
+        <div class="admin-modal-content">
+          <h2 id="addClientTitle">Add Client</h2>
+          <form id="client-add-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="add-first-name">First Name<span style="color:#CC0000">*</span></label>
+                <input type="text" id="add-first-name" required />
+              </div>
+              <div class="form-group">
+                <label for="add-last-name">Last Name<span style="color:#CC0000">*</span></label>
+                <input type="text" id="add-last-name" required />
+              </div>
+              <div class="form-group">
+                <label for="add-email">Email<span style="color:#CC0000">*</span></label>
+                <input type="email" id="add-email" required />
+                <div id="add-email-error" style="display:none;color:#CC0000;font-size:.85rem;margin-top:.25rem;">Please enter a valid email address.</div>
+              </div>
+              <div class="form-group">
+                <label for="add-phone">Phone</label>
+                <input type="tel" id="add-phone" />
+              </div>
+              <div class="form-group">
+                <label for="add-dob">DOB</label>
+                <input type="date" id="add-dob" />
+              </div>
+              <div class="form-group" style="grid-column:1 / -1;">
+                <label for="add-address">Address</label>
+                <input type="text" id="add-address" />
+              </div>
+            </div>
+            <p style="font-size:.8rem; opacity:.8; margin-top:.5rem;">Fields marked with <span style="color:#CC0000">*</span> are required. Client will be registered to the selected class.</p>
+            <div style="display:flex; gap:0.75rem; margin-top:1rem; flex-wrap:wrap;">
+              <button type="submit" class="btn-action view" id="client-add-save-btn">Create</button>
+              <button type="button" class="btn-action edit" id="client-add-cancel-btn">Cancel</button>
             </div>
           </form>
         </div>

@@ -376,6 +376,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const clientsTbody = document.getElementById('clients-tbody');
     const classSelect = document.getElementById('clients-class');
     if (clientsTbody && classSelect) {
+        // --- Add Client modal wiring ---
+        const addBtn = document.getElementById('add-client-btn');
+        const addModal = document.getElementById('add-client-modal');
+        const addForm = document.getElementById('client-add-form');
+        const addCancel = document.getElementById('client-add-cancel-btn');
+        const addSaveBtn = document.getElementById('client-add-save-btn');
+        let lastAddTrigger = null;
+        function openAddModal(){
+            if(!classSelect.value){ showToast('Select a class first','warn'); return; }
+            // Safety: if class is full, block opening
+            try {
+                const opt = classSelect.selectedOptions[0];
+                const data = JSON.parse((opt.getAttribute('data-json')||'').replace(/&#39;/g,'"'));
+                if(data && data.max_capacity){
+                    const regs = rosterAllRows?.length ?? (data.registrations||0);
+                    const remaining = parseInt(data.max_capacity,10) - parseInt(regs,10);
+                    if(remaining <= 0){ showToast('Class is full','warn'); return; }
+                }
+            } catch(_){}
+            lastAddTrigger = document.activeElement;
+            addForm?.reset?.();
+            addModal?.classList.remove('hidden');
+            document.getElementById('add-first-name')?.focus?.();
+        }
+        function closeAddModal(){ addModal?.classList.add('hidden'); lastAddTrigger?.focus?.(); }
+        addBtn?.addEventListener('click', openAddModal);
+        addCancel?.addEventListener('click', closeAddModal);
+        addModal?.addEventListener('click', (e)=>{ if(e.target===addModal) closeAddModal(); });
+        document.addEventListener('keydown', (e)=>{ if(!addModal?.classList.contains('hidden') && e.key==='Escape') closeAddModal(); });
+
         async function loadClassesForFilter() {
             try {
                 const res = await fetch(`${API_BASE_URL}/clients.php?listType=classes`, { credentials: 'same-origin' });
@@ -387,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const labelDate = dt ? dt.toLocaleString() : '(unscheduled)';
                     const opt = document.createElement('option');
                     opt.value = c.id;
-                    opt.textContent = `${labelDate} • ${c.course_type} (${c.registrations})`;
+                    opt.textContent = `${labelDate} • ${c.course_type} (${c.registrations}${c.max_capacity?'/'+c.max_capacity:''})`;
                     opt.setAttribute('data-json', JSON.stringify(c).replace(/'/g,"&#39;"));
                     classSelect.appendChild(opt);
                 });
@@ -404,36 +434,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(`${API_BASE_URL}/clients.php?classId=${encodeURIComponent(classId)}`, { credentials: 'same-origin' });
                 const json = await res.json();
                 if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load roster');
-                const rows = json.data || [];
-                if (!rows.length) {
+                rosterAllRows = json.data || [];
+                if(!rosterAllRows.length){
                     clientsTbody.innerHTML = '<tr><td colspan="8">No clients found for this class.</td></tr>';
+                    updateCapacityIndicator(0);
+                    renderRosterPagination();
                     return;
                 }
-                const meta = rows[0];
+                const meta = rosterAllRows[0];
                 rosterTitle.textContent = `Roster: ${meta.course_type} — ${meta.start_datetime?.slice(0,16) || ''}`;
-                clientsTbody.innerHTML = rows.map((r,i) => `
-                    <tr data-client-id="${r.id}" data-json='${JSON.stringify(r).replace(/'/g,"&#39;")}'>
-                        <td data-label="#">${i+1}</td>
-                        <td data-label="Full Name">${r.full_name}</td>
-                        <td data-label="DOB">${r.dob || ''}</td>
-                        <td data-label="Email">${r.email || ''}</td>
-                        <td data-label="Phone">${r.phone || ''}</td>
-                        <td data-label="Address">${r.address || ''}</td>
-                        <td data-label="Status">
-                            <select class="client-status-select" aria-label="Payment status for ${r.full_name}">
-                                ${['','paid','pending'].map(s=>`<option value="${s}" ${s===(r.payment_status||'')?'selected':''}>${s||'Unknown'}</option>`).join('')}
-                            </select>
-                        </td>
-                        <td data-label="Actions">
-                            <div style="display:flex; gap:.4rem; flex-wrap:wrap;">
-                                <button class="btn-action edit js-edit-client" type="button">Edit</button>
-                                <button class="btn-action view client-save-row" type="button">Save</button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-                attachClientEditButtons();
-                applyClientSearchFilter?.();
+                currentRosterPage = 1;
+                renderRosterPage();
+                updateCapacityIndicator(rosterAllRows.length);
             } catch (e) {
                 console.error(e);
                 clientsTbody.innerHTML = '<tr><td colspan="8">Error loading roster.</td></tr>';
@@ -458,6 +470,134 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!id) return showToast('Select a class first','warn');
             window.location.href = `${API_BASE_URL}/export.php?type=roster&classId=${encodeURIComponent(id)}&format=csv`;
         });
+
+        // Create client -> POST /api/clients.php with classId
+        addForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const classId = classSelect.value;
+            if(!classId){ showToast('Select a class first','warn'); return; }
+            const first_name = document.getElementById('add-first-name').value.trim();
+            const last_name = document.getElementById('add-last-name').value.trim();
+            const email = document.getElementById('add-email').value.trim();
+            const phone = document.getElementById('add-phone').value.trim();
+            const dob = document.getElementById('add-dob').value.trim();
+            const address = document.getElementById('add-address').value.trim();
+            if(!first_name || !last_name || !email){ showToast('First, last, and email are required','error'); return; }
+            // Email format validation
+            const emailErrorEl = document.getElementById('add-email-error');
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if(!emailPattern.test(email)){
+                if(emailErrorEl){ emailErrorEl.style.display='block'; }
+                document.getElementById('add-email').focus();
+                return;
+            } else if(emailErrorEl){ emailErrorEl.style.display='none'; }
+            const original = addSaveBtn.textContent; addSaveBtn.disabled=true; addSaveBtn.textContent='Creating...'; addSaveBtn.classList.add('btn-loading');
+            try {
+                const res = await fetch(`${API_BASE_URL}/clients.php`, {
+                    method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
+                    body: JSON.stringify({ first_name, last_name, email, phone, dob, address, classId })
+                });
+                const json = await res.json().catch(()=>({success:false,message:'Server error'}));
+                if(!res.ok || !json.success){ throw new Error(json.message||'Create failed'); }
+                closeAddModal();
+                showToast(json.created_new? 'Client added to class' : (json.already_registered? 'Client already in class' : 'Client linked to class'), 'success');
+                if(classSelect.value) loadRoster(classSelect.value); else loadClassesForFilter();
+            } catch(err){ showToast(err.message,'error'); }
+            finally { addSaveBtn.disabled=false; addSaveBtn.textContent=original; addSaveBtn.classList.remove('btn-loading'); }
+        });
+
+        // Capacity indicator logic
+        function updateCapacityIndicator(currentRegistrations){
+            const span = document.getElementById('capacity-remaining');
+            if(!span) return;
+            const opt = classSelect.selectedOptions[0];
+            if(!opt){ span.textContent=''; return; }
+            let data = null;
+            try { data = JSON.parse((opt.getAttribute('data-json')||'').replace(/&#39;/g,'"')); } catch(_){ }
+            if(!data){ span.textContent=''; return; }
+            const max = data.max_capacity ? parseInt(data.max_capacity,10) : null;
+            const regs = (typeof currentRegistrations === 'number') ? currentRegistrations : (data.registrations || 0);
+            if(max){
+                const remaining = Math.max(0, max - regs);
+                const addBtn = document.getElementById('add-client-btn');
+                if(remaining <= 0){
+                    span.innerHTML = `Capacity: ${regs}/${max} (0 left) <span class="capacity-full-badge">FULL</span>`;
+                    span.style.color='#CC0000';
+                    if(addBtn){ addBtn.disabled = true; addBtn.title = 'Class is full'; }
+                } else {
+                    span.innerHTML = `Capacity: ${regs}/${max} (${remaining} left)`;
+                    span.style.color='';
+                    if(addBtn){ addBtn.disabled = false; addBtn.title = ''; }
+                }
+            } else {
+                span.textContent = `Registered: ${regs}`;
+                span.style.color='';
+                const addBtn = document.getElementById('add-client-btn');
+                if(addBtn){ addBtn.disabled = false; addBtn.title = ''; }
+            }
+        }
+        classSelect?.addEventListener('change', ()=> updateCapacityIndicator());
+
+        // --- Pagination logic ---
+        let rosterAllRows = [];
+        let currentRosterPage = 1;
+        function getPageSize(){ const sel = document.getElementById('clients-page-size'); return sel ? parseInt(sel.value,10) : 25; }
+        function totalPages(){ const ps = getPageSize(); return Math.max(1, Math.ceil(filteredRosterRows().length / ps)); }
+        function filteredRosterRows(){
+            const q = (document.getElementById('clients-search')?.value||'').trim().toLowerCase();
+            if(!q) return rosterAllRows;
+            return rosterAllRows.filter(r => JSON.stringify(r).toLowerCase().includes(q));
+        }
+        function renderRosterPage(){
+            const rows = filteredRosterRows();
+            const ps = getPageSize();
+            const pages = totalPages();
+            if(currentRosterPage > pages) currentRosterPage = pages;
+            const start = (currentRosterPage-1)*ps;
+            const slice = rows.slice(start, start+ps);
+            if(!slice.length){
+                clientsTbody.innerHTML = '<tr><td colspan="8">No matching clients.</td></tr>';
+            } else {
+                clientsTbody.innerHTML = slice.map((r,i) => `
+                <tr data-client-id="${r.client_id}" data-json='${JSON.stringify(r).replace(/'/g,"&#39;")}'>
+                    <td data-label="#">${start + i + 1}</td>
+                    <td data-label="Full Name">${r.full_name}</td>
+                    <td data-label="DOB">${r.dob || ''}</td>
+                    <td data-label="Email">${r.email || ''}</td>
+                    <td data-label="Phone">${r.phone || ''}</td>
+                    <td data-label="Address">${r.address || ''}</td>
+                    <td data-label="Status">
+                        <select class="client-status-select" aria-label="Payment status for ${r.full_name}">
+                            ${['','paid','pending'].map(s=>`<option value="${s}" ${s===(r.payment_status||'')?'selected':''}>${s||'Unknown'}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td data-label="Actions">
+                        <div style="display:flex; gap:.4rem; flex-wrap:wrap;">
+                            <button class="btn-action edit js-edit-client" type="button">Edit</button>
+                            <button class="btn-action view client-save-row" type="button">Save</button>
+                        </div>
+                    </td>
+                </tr>`).join('');
+            }
+            attachClientEditButtons();
+            renderRosterPagination();
+        }
+        function renderRosterPagination(){
+            const pages = totalPages();
+            const info = document.getElementById('clients-page-info');
+            const prev = document.getElementById('clients-prev');
+            const next = document.getElementById('clients-next');
+            if(info) info.textContent = `Page ${Math.min(currentRosterPage,pages)}/${pages}`;
+            if(prev) prev.disabled = currentRosterPage <= 1;
+            if(next) next.disabled = currentRosterPage >= pages;
+        }
+        document.getElementById('clients-prev')?.addEventListener('click', () => { if(currentRosterPage>1){ currentRosterPage--; renderRosterPage(); } });
+        document.getElementById('clients-next')?.addEventListener('click', () => { if(currentRosterPage<totalPages()){ currentRosterPage++; renderRosterPage(); } });
+        document.getElementById('clients-page-size')?.addEventListener('change', () => { currentRosterPage = 1; renderRosterPage(); });
+        // Enhance existing search to reset to page 1
+        const origApply = typeof applyClientSearchFilter === 'function' ? applyClientSearchFilter : null;
+        function applyClientSearchFilter(){ currentRosterPage = 1; renderRosterPage(); }
+        // Replace earlier reference with new implementation
 
         // Roster QR logic (clients page)
         const rosterQrBtn = document.getElementById('show-roster-qr');
@@ -547,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(!clientModal) return;
             lastClientTrigger = document.activeElement;
             clientModal.classList.remove('hidden');
-            document.getElementById('client-edit-id').value = data.id;
+            document.getElementById('client-edit-id').value = data.client_id || data.id;
             document.getElementById('client-full-name').value = data.full_name || '';
             document.getElementById('client-dob').value = data.dob || '';
             document.getElementById('client-email').value = data.email || '';
@@ -579,14 +719,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if(!id) return;
             const raw = tr.getAttribute('data-json');
             let data = {};
-            try { data = JSON.parse(raw.replace(/&#39;/g,'"')); } catch(_){}
+            try { data = JSON.parse(raw.replace(/&#39;/g,'"')); } catch(_){ }
             const payment_status = tr.querySelector('.client-status-select')?.value || '';
-            const payload = { full_name: data.full_name||'', dob: data.dob||'', email: data.email||'', phone: data.phone||'', address: data.address||'', payment_status };
+            // Split full name for server requirements
+            const parts = (data.full_name||'').trim().split(/\s+/);
+            const first_name = parts.shift() || '';
+            const last_name = parts.length ? parts.join(' ') : '';
+            const payload = { first_name, last_name, dob: data.dob||'', email: data.email||'', phone: data.phone||'', address: data.address||'', payment_status };
             const original = btn.textContent; btn.disabled = true; btn.textContent = 'Saving...'; btn.classList.add('btn-loading');
             try {
-                let res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}`, { method:'PUT', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify(payload) });
+                const classId = classSelect.value || '';
+                let res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}${classId?`&classId=${encodeURIComponent(classId)}`:''}`, { method:'PUT', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify(payload) });
                 if(!res.ok && (res.status===405 || res.status===400 || res.status===500)){
-                    res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}`, { method:'POST', headers:{'Content-Type':'application/json','X-HTTP-Method-Override':'PUT'}, credentials:'same-origin', body: JSON.stringify({...payload, _method:'PUT'}) });
+                    res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}${classId?`&classId=${encodeURIComponent(classId)}`:''}`, { method:'POST', headers:{'Content-Type':'application/json','X-HTTP-Method-Override':'PUT'}, credentials:'same-origin', body: JSON.stringify({...payload, _method:'PUT'}) });
                 }
                 const json = await res.json().catch(()=>({success:false,message:'Bad JSON'}));
                 if(!res.ok || !json.success) throw new Error(json.message||'Update failed');
@@ -608,14 +753,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = document.getElementById('client-save-btn');
             const original = btn.textContent; btn.disabled=true; btn.textContent='Saving...'; btn.classList.add('btn-loading');
             try {
-                let res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}`, {
+                const parts = full_name.split(/\s+/);
+                const first_name = parts.shift() || '';
+                const last_name = parts.length ? parts.join(' ') : '';
+                const classId = classSelect.value || '';
+                let res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}${classId?`&classId=${encodeURIComponent(classId)}`:''}`, {
                     method:'PUT', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
-                    body: JSON.stringify({ full_name, dob, email, phone, address, payment_status })
+                    body: JSON.stringify({ first_name, last_name, dob, email, phone, address, payment_status })
                 });
                 if(!res.ok && (res.status===405 || res.status===400 || res.status===500)){
-                    res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}`, {
+                    res = await fetch(`${API_BASE_URL}/clients.php?id=${encodeURIComponent(id)}${classId?`&classId=${encodeURIComponent(classId)}`:''}`, {
                         method:'POST', headers:{'Content-Type':'application/json','X-HTTP-Method-Override':'PUT'}, credentials:'same-origin',
-                        body: JSON.stringify({ full_name, dob, email, phone, address, payment_status, _method:'PUT' })
+                        body: JSON.stringify({ first_name, last_name, dob, email, phone, address, payment_status, _method:'PUT' })
                     });
                 }
                 const json = await res.json().catch(()=>({success:false,message:'Bad JSON'}));

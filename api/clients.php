@@ -92,6 +92,7 @@ if ($method === 'PUT') {
     $pdo = pdo_or_503();
     require_admin($pdo);
     $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    $classId = isset($_GET['classId']) ? (int)$_GET['classId'] : null; // optional for updating registration payment status
     if ($id <= 0) json_response(400, [ 'success' => false, 'message' => 'Valid client id required' ]);
     $body = read_json_body();
     $first_name = trim($body['first_name'] ?? '');
@@ -100,6 +101,7 @@ if ($method === 'PUT') {
     $phone = trim($body['phone'] ?? '');
     $dob = trim($body['dob'] ?? '');
     $address = trim($body['address'] ?? '');
+    $payment_status = trim($body['payment_status'] ?? ''); // paid/pending/blank
     if ($first_name === '' || $last_name === '' || $email === '') {
         json_response(400, [ 'success' => false, 'message' => 'Missing required fields' ]);
     }
@@ -113,7 +115,16 @@ if ($method === 'PUT') {
         ':addr' => $address ?: null,
         ':id' => $id,
     ]);
-    json_response(200, [ 'success' => true, 'id' => $id ]);
+    $registrationUpdated = false;
+    if ($classId && $payment_status !== '') {
+        $valid = in_array($payment_status, ['paid','pending'], true) ? $payment_status : null;
+        if ($valid) {
+            $updReg = $pdo->prepare('UPDATE registrations SET status = :st WHERE client_id = :cid AND class_id = :clid');
+            $updReg->execute([':st'=>$valid, ':cid'=>$id, ':clid'=>$classId]);
+            if ($updReg->rowCount() > 0) $registrationUpdated = true;
+        }
+    }
+    json_response(200, [ 'success' => true, 'id' => $id, 'registration_updated' => $registrationUpdated ]);
 }
 
 if ($method === 'DELETE') {
@@ -143,7 +154,8 @@ if ($method === 'GET') {
     if ($listType === 'classes') {
         $stmt = $pdo->query(
             "SELECT c.id, c.course_type, c.start_datetime, c.location,
-                    (SELECT COUNT(*) FROM registrations r WHERE r.class_id = c.id) AS registrations
+                    (SELECT COUNT(*) FROM registrations r WHERE r.class_id = c.id) AS registrations,
+                    c.max_capacity
              FROM classes c
              ORDER BY c.start_datetime DESC"
         );

@@ -515,6 +515,7 @@ details.admin-controls[open] { padding-bottom: .4rem; }
 .admin-modal-content { background: var(--color-background); width: 100%; max-width: 620px; border-radius: var(--radius-sm); padding: 1.5rem; box-shadow: 0 4px 25px rgba(0,0,0,0.35); }
 .admin-modal-content h2 { margin-top:0; color: var(--color-primary); }
 @media (max-width: 600px){
+.form-error-text { color: #CC0000; font-size: .75rem; margin-top: .25rem; line-height: 1.2; }
     .admin-modal-content { padding: 1rem; }
 }
 /* Button loading state and spinner */
@@ -695,6 +696,9 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
 .toast.success { background: #155724; }
 .toast.error { background: #721c24; }
 .toast.warn { background: #856404; }
+
+/* Inline FULL badge when capacity reached */
+.capacity-full-badge { display:inline-block; background:#CC0000; color:#fff; font-size:.65rem; font-weight:700; padding:2px 5px; border-radius:3px; margin-left:.4rem; letter-spacing:.5px; vertical-align:middle; }
 
 /* Desktop: force hide mobile nav to prevent duplicate fallback menu */
 @media (min-width: 769px) {
