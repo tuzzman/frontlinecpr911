@@ -272,21 +272,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         function showBanner(msg){
             const region = document.getElementById('gr-banner-region');
-            // If no region, fall back to toast
             if(!region) return showToast(msg,'success');
-            // Create a floating banner so it never shifts table layout and is always visible
+            region.innerHTML = '';
             const banner = document.createElement('div');
-            banner.className = 'admin-banner floating';
+            banner.className = 'admin-banner';
             banner.textContent = msg;
-            // Announce politely for screen readers using the region
-            try { region.setAttribute('aria-live','polite'); region.textContent = ''; } catch(_){}
-            document.body.appendChild(banner);
-            // Auto-fade and remove
+            region.appendChild(banner);
+            // Fade out and clear without shifting layout
             setTimeout(()=>{
                 banner.style.opacity='0';
-                banner.style.transition='opacity .4s';
-                setTimeout(()=>{ banner.remove(); }, 500);
-            }, 2500);
+                banner.style.transition='opacity .3s';
+                setTimeout(()=>{ region.innerHTML=''; }, 350);
+            }, 2000);
         }
     }
     
