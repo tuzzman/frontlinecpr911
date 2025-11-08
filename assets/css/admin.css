@@ -686,6 +686,11 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
 .toast.error { background: #721c24; }
 .toast.warn { background: #856404; }
 
+/* Desktop: force hide mobile nav to prevent duplicate fallback menu */
+@media (min-width: 769px) {
+    .admin-mobile-nav { display: none !important; }
+}
+
 /* Inline banner (above tables) */
 /* Container for transient success banners above table; centered and non-shifty */
 #gr-banner-region {

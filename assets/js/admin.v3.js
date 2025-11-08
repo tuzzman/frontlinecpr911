@@ -48,6 +48,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             adminMenuBtn.setAttribute('aria-expanded', String(isOpen));
         });
+        // Force-hide mobile nav on desktop widths to avoid duplicate/plain menu
+        const enforceDesktopMobileNavState = () => {
+            if (window.innerWidth >= 769) {
+                adminMobileNav.classList.remove('open');
+                adminMobileNav.style.display = 'none';
+                adminMenuBtn.setAttribute('aria-expanded', 'false');
+            } else {
+                // allow CSS to control on mobile
+                adminMobileNav.style.display = '';
+            }
+        };
+        enforceDesktopMobileNavState();
+        window.addEventListener('resize', enforceDesktopMobileNavState);
     }
     async function checkAuthIfNeeded() {
         const requiresAuth = document.querySelector('[data-requires-auth]');
