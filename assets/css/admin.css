@@ -485,6 +485,22 @@ body.admin-compact .btn-submit-class { margin-top: 0.75rem; }
 .btn-submit-class:hover {
     background-color: var(--color-primary-dark);
 }
+/* One-line form controls */
+.one-line-form { display:flex; align-items:center; gap: .5rem; flex-wrap: nowrap; overflow-x: auto; padding: .4rem 0; }
+.one-line-form .form-grid { display:flex; align-items:center; gap: .5rem; }
+.one-line-form .form-group { display:flex; align-items:center; gap:.35rem; margin: 0; white-space: nowrap; }
+.one-line-form .form-group label { margin: 0; font-size: 0.85rem; }
+.one-line-form .form-group input:not([type="checkbox"]),
+.one-line-form .form-group select,
+.one-line-form .form-group textarea { padding: 0.35rem 0.5rem; height: 2rem; min-height: 2rem; }
+.one-line-form .form-group textarea { resize: vertical; max-height: 3rem; }
+.one-line-form button[type="submit"],
+.one-line-form .btn-action { margin: 0; }
+/* Details summary bar for controls */
+details.admin-controls > summary { cursor: pointer; list-style: none; background: var(--color-light-gray); border: 1px solid var(--color-light-gray); border-radius: var(--radius-sm); padding: .4rem .6rem; font-weight: 700; display:inline-block; }
+details.admin-controls[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: none; }
+details.admin-controls { border: 1px solid var(--color-light-gray); border-radius: var(--radius-sm); }
+details.admin-controls[open] { padding-bottom: .4rem; }
 /* Simple admin modal */
 .admin-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; justify-content: center; align-items: flex-start; padding: 4vh 1rem; z-index: 2000; }
 .admin-modal.hidden { display: none !important; }

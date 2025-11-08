@@ -89,30 +89,27 @@
       </section>
 
       <section class="dashboard-table-section">
-        <div style="display:flex; align-items: end; gap: 1rem; flex-wrap: wrap;">
-          <form id="gr-filter-form" class="client-filter-form" style="flex:1 1 600px;">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="gr-status">Status</label>
-                <select id="gr-status">
-                  <option value="">All</option>
-                  <option value="new">New</option>
-                  <option value="contacted">Contacted</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="closed">Closed</option>
-                </select>
+        <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
+          <details class="admin-controls">
+            <summary>Filters</summary>
+            <form id="gr-filter-form" class="client-filter-form one-line-form">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="gr-status">Status</label>
+                  <select id="gr-status">
+                    <option value="">All</option>
+                    <option value="new">New</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+                <div class="form-group"><label for="gr-from">From</label><input type="date" id="gr-from" /></div>
+                <div class="form-group"><label for="gr-to">To</label><input type="date" id="gr-to" /></div>
+                <button class="btn-action view" type="submit">Apply</button>
               </div>
-              <div class="form-group">
-                <label for="gr-from">From</label>
-                <input type="date" id="gr-from" />
-              </div>
-              <div class="form-group">
-                <label for="gr-to">To</label>
-                <input type="date" id="gr-to" />
-              </div>
-            </div>
-            <button class="btn-action view" type="submit" style="margin-top: 0.5rem;">Apply Filters</button>
-          </form>
+            </form>
+          </details>
           <button id="export-gr" class="btn-action export">Export CSV</button>
         </div>
 

@@ -65,47 +65,27 @@
         <h1>Classes</h1>
       </header>
 
-      <section style="margin-bottom: 1.5rem;">
-        <h2>Create Class</h2>
-        <form id="class-create-form" class="class-management-form">
+      <details class="admin-controls" style="margin-bottom: 0.75rem;" open>
+        <summary>Create Class</summary>
+        <form id="class-create-form" class="class-management-form one-line-form" autocomplete="off">
           <div class="form-grid">
-            <div class="form-group">
-              <label for="cc-course">Course Type</label>
+            <div class="form-group"><label for="cc-course">Course</label>
               <select id="cc-course" required>
-                <option value="">Select…</option>
+                <option value="">–</option>
                 <option value="BLS Provider">BLS Provider</option>
                 <option value="Heartsaver CPR/AED">Heartsaver CPR/AED</option>
                 <option value="First Aid + CPR">First Aid + CPR</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="cc-date">Date</label>
-              <input type="date" id="cc-date" />
-            </div>
-            <div class="form-group">
-              <label for="cc-time">Start Time</label>
-              <input type="time" id="cc-time" />
-            </div>
-            <div class="form-group">
-              <label for="cc-location">Location</label>
-              <input type="text" id="cc-location" placeholder="Address or venue" />
-            </div>
-            <div class="form-group">
-              <label for="cc-price">Price</label>
-              <input type="number" step="0.01" id="cc-price" placeholder="e.g., 65.00" />
-            </div>
-            <div class="form-group">
-              <label for="cc-capacity">Max Capacity</label>
-              <input type="number" id="cc-capacity" placeholder="e.g., 12" />
-            </div>
-            <div class="form-group" style="grid-column: 1 / -1;">
-              <label for="cc-notes">Notes</label>
-              <textarea id="cc-notes" rows="3" placeholder="Optional notes"></textarea>
-            </div>
+              </select></div>
+            <div class="form-group"><label for="cc-date">Date</label><input type="date" id="cc-date" /></div>
+            <div class="form-group"><label for="cc-time">Time</label><input type="time" id="cc-time" /></div>
+            <div class="form-group"><label for="cc-location">Location</label><input type="text" id="cc-location" placeholder="Location" /></div>
+            <div class="form-group"><label for="cc-price">Price</label><input type="number" step="0.01" id="cc-price" placeholder="$" /></div>
+            <div class="form-group"><label for="cc-capacity">Cap</label><input type="number" id="cc-capacity" placeholder="#" /></div>
+            <div class="form-group"><label for="cc-notes">Notes</label><input type="text" id="cc-notes" placeholder="Notes" /></div>
+            <button class="btn-action view" type="submit" style="align-self:stretch;">Add</button>
           </div>
-          <button class="btn-submit-class" type="submit">Create Class</button>
         </form>
-      </section>
+      </details>
 
       <section class="dashboard-table-section">
         <h2>All Classes</h2>
