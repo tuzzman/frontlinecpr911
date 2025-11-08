@@ -135,8 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 grTableBody.innerHTML = '<tr><td colspan="10">No requests found.</td></tr>';
                 return;
             }
-            grTableBody.innerHTML = rows.map(r => `
-                <tr data-gr-id="${r.id}" data-json='${JSON.stringify(r).replace(/'/g,"&#39;")}'>
+            grTableBody.innerHTML = rows.map(r => {
+                const safeJson = JSON.stringify(r).replace(/'/g,"&#39;");
+                return `
+                <tr data-gr-id="${r.id}" data-json='${safeJson}'>
                     <td data-label="Date">${r.created_at?.slice(0,10) || ''}</td>
                     <td data-label="Organization">${r.org_name}</td>
                     <td data-label="Contact">${r.contact_name}</td>
@@ -155,9 +157,27 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button type="button" class="btn-action edit gr-edit-notes" aria-label="Edit notes">Edit</button>
                         </div>
                     </td>
-                    <td data-label="Actions"><button class="btn-action view gr-save-row" type="button">Save</button></td>
-                </tr>
-            `).join('');
+                    <td data-label="Actions">
+                        <div class="gr-actions-wrapper" style="display:flex;gap:.4rem;flex-wrap:wrap;">
+                            <button class="btn-action view gr-save-row" type="button" aria-label="Save row ${r.id}">Save</button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+            // Fallback: if any row missing a save button (edge case), append one
+            Array.from(grTableBody.querySelectorAll('tr[data-gr-id]')).forEach(tr => {
+                if(!tr.querySelector('.gr-save-row')){
+                    const actionsCell = tr.querySelector('td[data-label="Actions"]');
+                    if(actionsCell){
+                        const wrap = actionsCell.querySelector('.gr-actions-wrapper') || actionsCell;
+                        const btn = document.createElement('button');
+                        btn.type='button';
+                        btn.className='btn-action view gr-save-row';
+                        btn.textContent='Save';
+                        wrap.appendChild(btn);
+                    }
+                }
+            });
         }
 
         grTableBody.addEventListener('click', (e) => {
