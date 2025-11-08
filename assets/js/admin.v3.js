@@ -122,6 +122,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load');
                 const rows = json.data || [];
                 renderRows(rows);
+                // Diagnostics: ensure Save buttons present
+                try {
+                    const count = grTableBody.querySelectorAll('.gr-save-row').length;
+                    if(count === 0 && rows.length){
+                        console.warn('[GR] No save buttons found after render; forcing injection');
+                        Array.from(grTableBody.querySelectorAll('tr[data-gr-id]')).forEach(tr => {
+                            if(!tr.querySelector('.gr-save-row')){
+                                const actionsCell = tr.querySelector('td[data-label="Actions"]') || tr.lastElementChild;
+                                if(actionsCell){
+                                    const btn = document.createElement('button');
+                                    btn.type='button'; btn.className='btn-action view gr-save-row'; btn.textContent='Save';
+                                    actionsCell.appendChild(btn);
+                                }
+                            }
+                        });
+                    }
+                } catch(err){ console.debug('GR diagnostics failed', err); }
                 renderSummary(rows);
             } catch (err) {
                 console.error(err);
