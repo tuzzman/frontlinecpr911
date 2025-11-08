@@ -111,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const toInput = document.getElementById('gr-to');
         const exportBtn = document.getElementById('export-gr');
 
+        let grAbortController = null;
         async function loadGroupRequests() {
             const params = new URLSearchParams();
             if (statusFilter && statusFilter.value) params.set('status', statusFilter.value);
@@ -122,8 +123,14 @@ document.addEventListener('DOMContentLoaded', () => {
             grTableBody.innerHTML = '';
             grTableBody.appendChild(placeholder);
             try {
-                const res = await fetch(`${API_BASE_URL}/group_request.php?${params.toString()}`, { credentials: 'same-origin' });
+                // Abort any in-flight request to avoid queueing
+                if (grAbortController) { try { grAbortController.abort(); } catch(_){} }
+                grAbortController = new AbortController();
+                const start = performance.now();
+                const res = await fetch(`${API_BASE_URL}/group_request.php?${params.toString()}`, { credentials: 'same-origin', signal: grAbortController.signal });
                 const json = await res.json();
+                const ms = Math.round(performance.now() - start);
+                console.log(`[GR] Loaded ${Array.isArray(json.data)?json.data.length:0} rows in ${ms} ms`);
                 if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load');
                 const rows = json.data || [];
                 renderRows(rows);
