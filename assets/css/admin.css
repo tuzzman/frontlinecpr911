@@ -688,27 +688,26 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
 
 /* Inline banner (above tables) */
 /* Container for transient success banners above table; centered and non-shifty */
-#gr-banner-region { 
-    position: absolute; 
-    top: .25rem; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    width: auto; 
-    text-align: center; 
-    pointer-events: none; 
-    min-height: 0; 
+#gr-banner-region {
+    position: absolute;
+    top: .25rem;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
     z-index: 10;
 }
 .admin-banner {
-    display: inline-block;
     background:#d1e7dd;
     color:#0f5132;
     border:1px solid #badbcc;
     padding: .4rem .65rem;
     border-radius: var(--radius-sm);
-    margin: 0; /* no layout shift */
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     font-size: .8rem;
     line-height: 1.1rem;
-    pointer-events: auto; /* allow selection if needed */
+    pointer-events: auto;
+    animation: bannerPop .25s ease-out;
 }
+@keyframes bannerPop { from { opacity:0; transform: translateY(-4px); } to { opacity:1; transform: translateY(0); } }

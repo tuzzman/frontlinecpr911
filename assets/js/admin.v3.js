@@ -273,17 +273,31 @@ document.addEventListener('DOMContentLoaded', () => {
         function showBanner(msg){
             const region = document.getElementById('gr-banner-region');
             if(!region) return showToast(msg,'success');
+            // Ensure region has correct positioning in case CSS hasn't loaded
+            try {
+                const parent = region.closest('.dashboard-table-section');
+                if (parent && getComputedStyle(parent).position === 'static') {
+                    parent.style.position = 'relative';
+                }
+            } catch(_) {}
             region.innerHTML = '';
             const banner = document.createElement('div');
             banner.className = 'admin-banner';
             banner.textContent = msg;
+            // Inline minimal safety styles in case CSS cache lags
+            banner.style.background = '#d1e7dd';
+            banner.style.color = '#0f5132';
+            banner.style.border = '1px solid #badbcc';
+            banner.style.padding = '.4rem .65rem';
+            banner.style.borderRadius = '4px';
+            banner.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
             region.appendChild(banner);
             // Fade out and clear without shifting layout
             setTimeout(()=>{
                 banner.style.opacity='0';
                 banner.style.transition='opacity .3s';
                 setTimeout(()=>{ region.innerHTML=''; }, 350);
-            }, 2000);
+            }, 1800);
         }
     }
     
