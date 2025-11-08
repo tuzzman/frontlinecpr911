@@ -377,13 +377,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const classSelect = document.getElementById('clients-class');
     if (clientsTbody && classSelect) {
         // --- Add Client modal wiring ---
-        const addBtn = document.getElementById('add-client-btn');
-        const addModal = document.getElementById('add-client-modal');
+    const addBtn = document.getElementById('add-client-btn');
+    const addModal = document.getElementById('add-client-modal');
         const addForm = document.getElementById('client-add-form');
         const addCancel = document.getElementById('client-add-cancel-btn');
         const addSaveBtn = document.getElementById('client-add-save-btn');
         let lastAddTrigger = null;
-        function openAddModal(){
+        function openAddModal(ev){
             if(!classSelect.value){ showToast('Select a class first','warn'); return; }
             // Safety: if class is full, block opening
             try {
@@ -392,7 +392,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(data && data.max_capacity){
                     const regs = rosterAllRows?.length ?? (data.registrations||0);
                     const remaining = parseInt(data.max_capacity,10) - parseInt(regs,10);
-                    if(remaining <= 0){ showToast('Class is full','warn'); return; }
+                    if(remaining <= 0){
+                        // Allow an override with confirmation so admins can overbook if needed
+                        const proceed = window.confirm('This class is FULL. Do you want to add a client anyway?');
+                        if(!proceed) return;
+                    }
                 }
             } catch(_){}
             lastAddTrigger = document.activeElement;
@@ -401,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('add-first-name')?.focus?.();
         }
         function closeAddModal(){ addModal?.classList.add('hidden'); lastAddTrigger?.focus?.(); }
-        addBtn?.addEventListener('click', openAddModal);
+        addBtn?.addEventListener('click', (e)=>openAddModal(e));
         addCancel?.addEventListener('click', closeAddModal);
         addModal?.addEventListener('click', (e)=>{ if(e.target===addModal) closeAddModal(); });
         document.addEventListener('keydown', (e)=>{ if(!addModal?.classList.contains('hidden') && e.key==='Escape') closeAddModal(); });
@@ -523,7 +527,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(remaining <= 0){
                     span.innerHTML = `Capacity: ${regs}/${max} (0 left) <span class="capacity-full-badge">FULL</span>`;
                     span.style.color='#CC0000';
-                    if(addBtn){ addBtn.disabled = true; addBtn.title = 'Class is full'; }
+                    // Keep button enabled but warn via title; open handler will confirm override
+                    if(addBtn){ addBtn.disabled = false; addBtn.title = 'Class is full — confirmation required to add'; }
                 } else {
                     span.innerHTML = `Capacity: ${regs}/${max} (${remaining} left)`;
                     span.style.color='';
