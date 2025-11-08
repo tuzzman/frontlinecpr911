@@ -290,6 +290,7 @@ body.admin-compact .btn-submit-class { margin-top: 0.75rem; }
     background-color: var(--color-light-gray);
     padding: var(--spacing-md);
     border-radius: var(--radius-sm);
+    position: relative; /* allow non-intrusive banners if needed */
 }
 
 .class-summary-table {
@@ -686,4 +687,17 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
 .toast.warn { background: #856404; }
 
 /* Inline banner (above tables) */
-.admin-banner { background:#d1e7dd; color:#0f5132; border:1px solid #badbcc; padding: .5rem .75rem; border-radius: var(--radius-sm); margin: 0 0 .5rem 0; }
+/* Container for transient success banners above table; centered and non-shifty */
+#gr-banner-region { width: 100%; text-align: center; min-height: 0; }
+.admin-banner {
+    display: inline-block;
+    background:#d1e7dd;
+    color:#0f5132;
+    border:1px solid #badbcc;
+    padding: .5rem .75rem;
+    border-radius: var(--radius-sm);
+    margin: 0 0 .5rem 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+/* Optional floating variant to avoid any layout movement and always be visible */
+.admin-banner.floating { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 2500; }

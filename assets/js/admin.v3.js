@@ -271,14 +271,22 @@ document.addEventListener('DOMContentLoaded', () => {
             set('metric-total', total); set('metric-new', tally.new); set('metric-contacted', tally.contacted); set('metric-scheduled', tally.scheduled); set('metric-closed', tally.closed);
         }
         function showBanner(msg){
-            let region = document.getElementById('gr-banner-region');
+            const region = document.getElementById('gr-banner-region');
+            // If no region, fall back to toast
             if(!region) return showToast(msg,'success');
+            // Create a floating banner so it never shifts table layout and is always visible
             const banner = document.createElement('div');
-            banner.className = 'admin-banner';
+            banner.className = 'admin-banner floating';
             banner.textContent = msg;
-            region.innerHTML='';
-            region.appendChild(banner);
-            setTimeout(()=>{ banner.style.opacity='0'; banner.style.transition='opacity .4s'; setTimeout(()=>{ if(banner.parentNode===region) region.removeChild(banner); }, 500); }, 2500);
+            // Announce politely for screen readers using the region
+            try { region.setAttribute('aria-live','polite'); region.textContent = ''; } catch(_){}
+            document.body.appendChild(banner);
+            // Auto-fade and remove
+            setTimeout(()=>{
+                banner.style.opacity='0';
+                banner.style.transition='opacity .4s';
+                setTimeout(()=>{ banner.remove(); }, 500);
+            }, 2500);
         }
     }
     
