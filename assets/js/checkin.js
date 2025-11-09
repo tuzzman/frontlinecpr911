@@ -1,6 +1,20 @@
 (function(){
   const params = new URLSearchParams(location.search);
-  const classId = params.get('class');
+  // Accept multiple possible parameter names and path patterns for robustness
+  function extractClassId(){
+    let id = params.get('class') || params.get('classId') || params.get('id') || params.get('c');
+    if(id) return id;
+    // Try path-based /class_checkin.html?123 or /class_checkin/123
+    try {
+      const url = new URL(location.href);
+      const parts = url.pathname.split('/').filter(Boolean);
+      // capture last numeric segment
+      const last = parts[parts.length-1];
+      if(/^[0-9]+$/.test(last)) return last;
+    } catch(_){}
+    return '';
+  }
+  const classId = extractClassId();
   const loadingCard = document.getElementById('card-loading');
   const errorCard = document.getElementById('card-error');
   const formCard = document.getElementById('card-form');
@@ -44,6 +58,10 @@
     if(!activeId){
       show(errorCard);
       manualForm && (manualForm.style.display='block');
+      if(errorDebug){
+        errorDebug.style.display='block';
+        errorDebug.textContent = '[Missing class id]\nQuery: ' + location.search;
+      }
       return; }
     try {
       const urlRel = `api/classes.php?public=1&id=${encodeURIComponent(activeId)}`;
