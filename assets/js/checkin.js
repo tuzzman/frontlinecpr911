@@ -11,6 +11,9 @@
   const form = document.getElementById('checkin-form');
   const submitBtn = document.getElementById('submit-btn');
   const hiddenClassId = document.getElementById('class_id');
+  const errorDebug = document.getElementById('error-debug');
+  const manualForm = document.getElementById('manual-class-form');
+  const manualInput = document.getElementById('manual-class-id');
 
   // Simple honeypot to reduce trivial scripted spam
   const honeypot = document.createElement('input');
@@ -36,10 +39,14 @@
     } catch(e){ return iso; }
   }
 
-  async function loadClass(){
-    if(!classId){ show(errorCard); return; }
+  async function loadClass(idOverride){
+    const activeId = idOverride || classId;
+    if(!activeId){
+      show(errorCard);
+      manualForm && (manualForm.style.display='block');
+      return; }
     try {
-      const urlRel = `api/classes.php?public=1&id=${encodeURIComponent(classId)}`;
+      const urlRel = `api/classes.php?public=1&id=${encodeURIComponent(activeId)}`;
       let resp;
       try {
         resp = await fetch(urlRel, { cache: 'no-store' });
@@ -47,14 +54,22 @@
         console.log('[CheckIn] Relative fetch failed, trying absolute /api path', err);
       }
       if(!resp || !resp.ok){
-        const urlAbs = `/api/classes.php?public=1&id=${encodeURIComponent(classId)}`;
+        const urlAbs = `/api/classes.php?public=1&id=${encodeURIComponent(activeId)}`;
         resp = await fetch(urlAbs, { cache: 'no-store' });
       }
       if(!resp.ok){ throw new Error('not ok'); }
       const payload = await resp.json();
       console.log('[CheckIn] classes payload:', payload);
       const data = payload && (payload.data || payload);
-      if(!payload || payload.success === false || !data || !data.id){ show(errorCard); return; }
+      if(!payload || payload.success === false || !data || !data.id){
+        show(errorCard);
+        manualForm && (manualForm.style.display='block');
+        if(errorDebug){
+          errorDebug.style.display='block';
+          errorDebug.textContent = '[No class data returned]\nRaw payload:\n' + JSON.stringify(payload,null,2);
+        }
+        return;
+      }
       hiddenClassId.value = data.id;
       titleEl.textContent = (data.course_type || 'Class') + ' Check-In';
       metaEl.innerHTML = `Location: <strong>${data.location || 'TBA'}</strong><br>` +
@@ -66,8 +81,13 @@
         submitBtn.textContent = 'Class Full';
       }
       show(formCard);
-    } catch(err){
+    } catch(err){      
       show(errorCard);
+      manualForm && (manualForm.style.display='block');
+      if(errorDebug){
+        errorDebug.style.display='block';
+        errorDebug.textContent = '[Fetch error]\n' + (err && err.message ? err.message : err);
+      }
     }
   }
 
@@ -129,4 +149,12 @@
   });
 
   loadClass();
+
+  manualForm && manualForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const val = (manualInput && manualInput.value.trim()) || '';
+    if(!val){ manualInput && manualInput.focus(); return; }
+    errorDebug && (errorDebug.style.display='none');
+    loadClass(val);
+  });
 })();
