@@ -39,9 +39,20 @@
   async function loadClass(){
     if(!classId){ show(errorCard); return; }
     try {
-      const resp = await fetch(`api/classes.php?public=1&id=${encodeURIComponent(classId)}`);
+      const urlRel = `api/classes.php?public=1&id=${encodeURIComponent(classId)}`;
+      let resp;
+      try {
+        resp = await fetch(urlRel, { cache: 'no-store' });
+      } catch(err){
+        console.log('[CheckIn] Relative fetch failed, trying absolute /api path', err);
+      }
+      if(!resp || !resp.ok){
+        const urlAbs = `/api/classes.php?public=1&id=${encodeURIComponent(classId)}`;
+        resp = await fetch(urlAbs, { cache: 'no-store' });
+      }
       if(!resp.ok){ throw new Error('not ok'); }
       const payload = await resp.json();
+      console.log('[CheckIn] classes payload:', payload);
       const data = payload && (payload.data || payload);
       if(!payload || payload.success === false || !data || !data.id){ show(errorCard); return; }
       hiddenClassId.value = data.id;
