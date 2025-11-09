@@ -11,6 +11,7 @@ if ($method === 'POST') {
     $dob = trim($body['dob'] ?? '');
     $address = trim($body['address'] ?? '');
     $classId = isset($body['classId']) ? (int)$body['classId'] : null;
+    $force = !empty($body['force']); // allow admin override of capacity when true
 
     if ($first_name === '' || $last_name === '' || $email === '') {
         json_response(400, [ 'success' => false, 'message' => 'Missing required fields' ]);
@@ -66,7 +67,7 @@ if ($method === 'POST') {
                 $alreadyRegistered = true;
             } else {
                 // Optional capacity check
-                if (!empty($classRow['max_capacity'])) {
+                if (!empty($classRow['max_capacity']) && !$force) {
                     $capCnt = $pdo->prepare('SELECT COUNT(*) AS cnt FROM registrations WHERE class_id = :cid');
                     $capCnt->execute([':cid'=>$classId]);
                     $current = (int)$capCnt->fetch()['cnt'];
@@ -81,7 +82,7 @@ if ($method === 'POST') {
         }
 
         $pdo->commit();
-        json_response(200, [ 'success' => true, 'client_id' => $clientId, 'created_new' => $created, 'already_registered' => $alreadyRegistered ]);
+    json_response(200, [ 'success' => true, 'client_id' => $clientId, 'created_new' => $created, 'already_registered' => $alreadyRegistered, 'forced' => $force ]);
     } catch (Throwable $e) {
         $pdo->rollBack();
         json_response(500, [ 'success' => false, 'message' => 'Server error', 'error' => $e->getMessage() ]);

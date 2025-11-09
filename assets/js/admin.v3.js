@@ -5,7 +5,17 @@
  * FRONTLINECPR911 ADMIN DASHBOARD JAVASCRIPT
  * Handles authentication, dynamic data loading, and CRUD operations.
  */
-const API_BASE_URL = '/api';
+// Compute API base relative to site root or subdirectory hosting
+const API_BASE_URL = (() => {
+    try {
+        const path = window.location.pathname || '/';
+        const idx = path.indexOf('/admin/');
+        const base = idx >= 0 ? path.slice(0, idx) : '';
+        return `${base}/api`;
+    } catch(_) {
+        return '/api';
+    }
+})();
 // Toast utility
 function showToast(message, type='info', timeout=3500){
     let container = document.querySelector('.toast-container');
@@ -383,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const addCancel = document.getElementById('client-add-cancel-btn');
         const addSaveBtn = document.getElementById('client-add-save-btn');
         let lastAddTrigger = null;
+        let overrideFullAdd = false; // track if user confirmed overbooking
         function openAddModal(ev){
             if(!classSelect.value){ showToast('Select a class first','warn'); return; }
             // Safety: if class is full, block opening
@@ -394,8 +405,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const remaining = parseInt(data.max_capacity,10) - parseInt(regs,10);
                     if(remaining <= 0){
                         // Allow an override with confirmation so admins can overbook if needed
-                        const proceed = window.confirm('This class is FULL. Do you want to add a client anyway?');
-                        if(!proceed) return;
+                        const proceed = window.confirm('This class is FULL. Do you want to add a client anyway? (Override capacity)');
+                        if(!proceed) return; else overrideFullAdd = true;
                     }
                 }
             } catch(_){}
@@ -499,7 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const res = await fetch(`${API_BASE_URL}/clients.php`, {
                     method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
-                    body: JSON.stringify({ first_name, last_name, email, phone, dob, address, classId })
+                    body: JSON.stringify({ first_name, last_name, email, phone, dob, address, classId, force: overrideFullAdd })
                 });
                 const json = await res.json().catch(()=>({success:false,message:'Server error'}));
                 if(!res.ok || !json.success){ throw new Error(json.message||'Create failed'); }
@@ -507,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(json.created_new? 'Client added to class' : (json.already_registered? 'Client already in class' : 'Client linked to class'), 'success');
                 if(classSelect.value) loadRoster(classSelect.value); else loadClassesForFilter();
             } catch(err){ showToast(err.message,'error'); }
-            finally { addSaveBtn.disabled=false; addSaveBtn.textContent=original; addSaveBtn.classList.remove('btn-loading'); }
+            finally { overrideFullAdd = false; addSaveBtn.disabled=false; addSaveBtn.textContent=original; addSaveBtn.classList.remove('btn-loading'); }
         });
 
         // Capacity indicator logic
