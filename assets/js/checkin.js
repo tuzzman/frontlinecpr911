@@ -41,14 +41,15 @@
     try {
       const resp = await fetch(`api/classes.php?public=1&id=${encodeURIComponent(classId)}`);
       if(!resp.ok){ throw new Error('not ok'); }
-      const data = await resp.json();
-      if(!data || !data.id){ show(errorCard); return; }
+      const payload = await resp.json();
+      const data = payload && (payload.data || payload);
+      if(!payload || payload.success === false || !data || !data.id){ show(errorCard); return; }
       hiddenClassId.value = data.id;
-      titleEl.textContent = data.course_type + ' Check-In';
+      titleEl.textContent = (data.course_type || 'Class') + ' Check-In';
       metaEl.innerHTML = `Location: <strong>${data.location || 'TBA'}</strong><br>` +
-        `Date: <strong>${fmtDateTime(data.start_datetime)}</strong><br>` +
-        `Spots Left: <strong>${data.spots_left}</strong>`;
-      if(data.spots_left <= 0){
+        `Date: <strong>${fmtDateTime(data.start_datetime || '')}</strong><br>` +
+        `Spots Left: <strong>${data.spots_left ?? '—'}</strong>`;
+      if(typeof data.spots_left === 'number' && data.spots_left <= 0){
         metaEl.innerHTML += `<br><span style="color:var(--color-primary);font-weight:700;">Class is currently full.</span>`;
         submitBtn.disabled = true;
         submitBtn.textContent = 'Class Full';
@@ -100,7 +101,7 @@
       if(data.success){
         if(data.already_registered){ duplicateMsg.style.display='block'; }
         show(successCard);
-      } else if(data.error === 'Class is full'){ // backend capacity message
+      } else if((data.message||'').toLowerCase().includes('class is full')){ // backend capacity message
         metaEl.innerHTML += `<br><span style="color:var(--color-primary);font-weight:700;">Class just reached capacity.</span>`;
         submitBtn.disabled = true;
         submitBtn.textContent = 'Class Full';
