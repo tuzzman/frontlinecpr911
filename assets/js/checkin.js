@@ -57,7 +57,7 @@
     const activeId = idOverride || classId;
     if(!activeId){
       show(errorCard);
-      manualForm && (manualForm.style.display='block');
+      manualForm && (manualForm.style.display='block'); // ensure visible
       if(errorDebug){
         errorDebug.style.display='block';
         errorDebug.textContent = '[Missing class id]\nQuery: ' + location.search;
@@ -81,7 +81,7 @@
       const data = payload && (payload.data || payload);
       if(!payload || payload.success === false || !data || !data.id){
         show(errorCard);
-        manualForm && (manualForm.style.display='block');
+        manualForm && (manualForm.style.display='block'); // ensure retained
         if(errorDebug){
           errorDebug.style.display='block';
           errorDebug.textContent = '[No class data returned]\nRaw payload:\n' + JSON.stringify(payload,null,2);
@@ -99,7 +99,7 @@
         submitBtn.textContent = 'Class Full';
       }
       show(formCard);
-    } catch(err){      
+    } catch(err){
       show(errorCard);
       manualForm && (manualForm.style.display='block');
       if(errorDebug){
