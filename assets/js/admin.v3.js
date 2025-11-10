@@ -433,12 +433,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 let list = json.classes || [];
                 if(selectedCourse){ list = list.filter(c => (c.course_type||'') === selectedCourse); }
                 if(selectedMonth){
-                    // match year-month part of start_datetime
-                    list = list.filter(c => {
-                        if(!c.start_datetime) return false;
-                        const ym = c.start_datetime.slice(0,7); // YYYY-MM
-                        return ym === selectedMonth;
-                    });
+                    // Normalize to YYYY-MM regardless of input format
+                    const toYM = (s) => {
+                        if(!s) return null;
+                        // Attempt Date parsing first
+                        let d = null;
+                        try { d = new Date(s.includes('T')? s : s.replace(' ','T')); } catch(_) { d = null; }
+                        if(d && !isNaN(d.getTime())){
+                            const y = d.getFullYear();
+                            const m = String(d.getMonth()+1).padStart(2,'0');
+                            return `${y}-${m}`;
+                        }
+                        // Fallback: substring parse 'YYYY-MM-...'
+                        const m1 = String(s).slice(0,7);
+                        // Pad month if format like 'YYYY-M'
+                        const match = /^([0-9]{4})-([0-9]{1,2})/.exec(m1 || '');
+                        if(match){
+                            return `${match[1]}-${String(match[2]).padStart(2,'0')}`;
+                        }
+                        return null;
+                    };
+                    list = list.filter(c => toYM(c.start_datetime) === selectedMonth);
                 }
                 const classPlaceholder = (!selectedCourse || !selectedMonth) ? '-- Select Course & Month First --' : '-- Select Class --';
                 // Optional: sort by start_datetime asc
