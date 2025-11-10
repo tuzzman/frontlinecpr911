@@ -386,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const clientsTbody = document.getElementById('clients-tbody');
     const classSelect = document.getElementById('clients-class');
     const courseFilter = document.getElementById('clients-course');
+    const monthFilter = document.getElementById('clients-month');
     if (clientsTbody && classSelect) {
         // --- Add Client modal wiring ---
     const addBtn = document.getElementById('add-client-btn');
@@ -428,11 +429,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const json = await res.json();
                 if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load classes');
                 const selectedCourse = courseFilter?.value || '';
+                const selectedMonth = monthFilter?.value || ''; // format YYYY-MM
                 let list = json.classes || [];
                 if(selectedCourse){ list = list.filter(c => (c.course_type||'') === selectedCourse); }
+                if(selectedMonth){
+                    // match year-month part of start_datetime
+                    list = list.filter(c => {
+                        if(!c.start_datetime) return false;
+                        const ym = c.start_datetime.slice(0,7); // YYYY-MM
+                        return ym === selectedMonth;
+                    });
+                }
+                const classPlaceholder = (!selectedCourse || !selectedMonth) ? '-- Select Course & Month First --' : '-- Select Class --';
                 // Optional: sort by start_datetime asc
                 try { list.sort((a,b)=> String(a.start_datetime||'').localeCompare(String(b.start_datetime||''))); } catch(_){ }
-                classSelect.innerHTML = '<option value="">-- Select Class --</option>';
+                classSelect.innerHTML = `<option value="">${classPlaceholder}</option>`;
                 list.forEach(c => {
                     const dt = c.start_datetime ? new Date(c.start_datetime.replace(' ', 'T')) : null;
                     const labelDate = dt ? dt.toLocaleString() : '(unscheduled)';
@@ -443,18 +454,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     classSelect.appendChild(opt);
                 });
                 // Restore selection
-                try {
-                    const savedId = localStorage.getItem('clientsSelectedClass');
-                    if(savedId && classSelect.querySelector(`option[value="${savedId}"]`)) {
-                        classSelect.value = savedId;
-                        loadRoster(savedId);
-                    } else {
-                        // If no class is selected for this filter set, clear roster prompt
-                        clientsTbody.innerHTML = '<tr><td colspan="8">Select a class to load roster.</td></tr>';
-                        document.getElementById('roster-title')?.textContent = 'Roster';
-                        updateCapacityIndicator(0);
-                    }
-                } catch(_){ }
+                if(selectedCourse && selectedMonth){
+                    try {
+                        const savedId = localStorage.getItem('clientsSelectedClass');
+                        if(savedId && classSelect.querySelector(`option[value="${savedId}"]`)) {
+                            classSelect.value = savedId;
+                            loadRoster(savedId);
+                        } else {
+                            clientsTbody.innerHTML = '<tr><td colspan="8">Select a class to load roster.</td></tr>';
+                            document.getElementById('roster-title')?.textContent = 'Roster';
+                            updateCapacityIndicator(0);
+                        }
+                    } catch(_){ }
+                } else {
+                    clientsTbody.innerHTML = '<tr><td colspan="8">Choose course & month to view classes.</td></tr>';
+                    document.getElementById('roster-title')?.textContent = 'Roster';
+                    updateCapacityIndicator(0);
+                }
             } catch (e) {
                 console.error(e);
             }
@@ -500,14 +516,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 try { localStorage.removeItem('clientsSelectedClass'); } catch(_){ }
             }
         });
-        courseFilter?.addEventListener('change', () => {
-            try { localStorage.setItem('clientsSelectedCourse', courseFilter.value || ''); } catch(_){ }
-            // Clear class selection and roster, then reload classes filtered by course
-            if(classSelect){ classSelect.value = ''; }
-            clientsTbody.innerHTML = '<tr><td colspan="8">Select a class to load roster.</td></tr>';
+        function resetRosterPrompt(msg){
+            clientsTbody.innerHTML = `<tr><td colspan="8">${msg}</td></tr>`;
             document.getElementById('roster-title')?.textContent = 'Roster';
             updateCapacityIndicator(0);
             try { localStorage.removeItem('clientsSelectedClass'); } catch(_){ }
+        }
+        courseFilter?.addEventListener('change', () => {
+            try { localStorage.setItem('clientsSelectedCourse', courseFilter.value || ''); } catch(_){ }
+            if(classSelect){ classSelect.innerHTML = '<option value="">-- Select Course & Month First --</option>'; classSelect.value=''; }
+            resetRosterPrompt('Choose course & month to view classes.');
+            loadClassesForFilter();
+        });
+        monthFilter?.addEventListener('change', () => {
+            try { localStorage.setItem('clientsSelectedMonth', monthFilter.value || ''); } catch(_){ }
+            if(classSelect){ classSelect.innerHTML = '<option value="">-- Select Course & Month First --</option>'; classSelect.value=''; }
+            resetRosterPrompt('Choose course & month to view classes.');
             loadClassesForFilter();
         });
 
@@ -794,7 +818,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
     // Restore saved course first (then load classes filtered)
-    try { const savedCourse = localStorage.getItem('clientsSelectedCourse'); if(courseFilter && savedCourse !== null){ courseFilter.value = savedCourse; } } catch(_){ }
+        try {
+            const savedCourse = localStorage.getItem('clientsSelectedCourse');
+            const savedMonth = localStorage.getItem('clientsSelectedMonth');
+            if(courseFilter && savedCourse !== null){ courseFilter.value = savedCourse; }
+            if(monthFilter && savedMonth !== null){ monthFilter.value = savedMonth; }
+        } catch(_){ }
     loadClassesForFilter();
         // Quick search filter
         const searchInput = document.getElementById('clients-search');
