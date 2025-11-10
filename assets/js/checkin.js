@@ -2,7 +2,13 @@
   const params = new URLSearchParams(location.search);
   // Accept multiple possible parameter names and path patterns for robustness
   function extractClassId(){
-    let id = params.get('class') || params.get('classId') || params.get('id') || params.get('c');
+    // Build a case-insensitive map of query params
+    const map = {};
+    try {
+      for (const [k,v] of params.entries()) { map[String(k).toLowerCase()] = v; }
+    } catch(_){ }
+    let id = map['class'] || map['classid'] || map['id'] || map['c']
+           || params.get('class') || params.get('classId') || params.get('id') || params.get('c');
     if(id) return id;
     // Try path-based /class_checkin.html?123 or /class_checkin/123
     try {
