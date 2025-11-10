@@ -534,14 +534,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if(id){ try{ localStorage.setItem('clientsSelectedClass', id);}catch(_){} loadRoster(id); }
             else {
                 clientsTbody.innerHTML = '<tr><td colspan="8">Select a class to load roster.</td></tr>';
-                document.getElementById('roster-title')?.textContent = 'Roster';
+                { const rt = document.getElementById('roster-title'); if(rt) rt.textContent = 'Roster'; }
                 updateCapacityIndicator(0);
                 try { localStorage.removeItem('clientsSelectedClass'); } catch(_){ }
             }
         });
         function resetRosterPrompt(msg){
             clientsTbody.innerHTML = `<tr><td colspan="8">${msg}</td></tr>`;
-            document.getElementById('roster-title')?.textContent = 'Roster';
+            { const rt = document.getElementById('roster-title'); if(rt) rt.textContent = 'Roster'; }
             updateCapacityIndicator(0);
             try { localStorage.removeItem('clientsSelectedClass'); } catch(_){ }
         }
