@@ -24,6 +24,9 @@ DirectoryIndex index.html
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
+  # Serve /tab_icon.ico when /favicon.ico is requested
+  RewriteRule ^favicon\.ico$ tab_icon.ico [L,NC]
+
   # Map style-<version>.css to style.css (e.g., assets/css/style-20251106.css)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteRule ^assets/css/style-[0-9A-Za-z_.-]+\.css$ assets/css/style.css [L,NC]
