@@ -385,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Clients & Rosters page
     const clientsTbody = document.getElementById('clients-tbody');
     const classSelect = document.getElementById('clients-class');
+    const courseFilter = document.getElementById('clients-course');
     if (clientsTbody && classSelect) {
         // --- Add Client modal wiring ---
     const addBtn = document.getElementById('add-client-btn');
@@ -426,8 +427,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(`${API_BASE_URL}/clients.php?listType=classes`, { credentials: 'same-origin' });
                 const json = await res.json();
                 if (!res.ok || !json.success) throw new Error(json.message || 'Failed to load classes');
+                const selectedCourse = courseFilter?.value || '';
+                let list = json.classes || [];
+                if(selectedCourse){ list = list.filter(c => (c.course_type||'') === selectedCourse); }
+                // Optional: sort by start_datetime asc
+                try { list.sort((a,b)=> String(a.start_datetime||'').localeCompare(String(b.start_datetime||''))); } catch(_){ }
                 classSelect.innerHTML = '<option value="">-- Select Class --</option>';
-                (json.classes || []).forEach(c => {
+                list.forEach(c => {
                     const dt = c.start_datetime ? new Date(c.start_datetime.replace(' ', 'T')) : null;
                     const labelDate = dt ? dt.toLocaleString() : '(unscheduled)';
                     const opt = document.createElement('option');
@@ -437,7 +443,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     classSelect.appendChild(opt);
                 });
                 // Restore selection
-                try { const savedId = localStorage.getItem('clientsSelectedClass'); if(savedId && classSelect.querySelector(`option[value="${savedId}"]`)) { classSelect.value = savedId; loadRoster(savedId); } } catch(_){}
+                try {
+                    const savedId = localStorage.getItem('clientsSelectedClass');
+                    if(savedId && classSelect.querySelector(`option[value="${savedId}"]`)) {
+                        classSelect.value = savedId;
+                        loadRoster(savedId);
+                    } else {
+                        // If no class is selected for this filter set, clear roster prompt
+                        clientsTbody.innerHTML = '<tr><td colspan="8">Select a class to load roster.</td></tr>';
+                        document.getElementById('roster-title')?.textContent = 'Roster';
+                        updateCapacityIndicator(0);
+                    }
+                } catch(_){ }
             } catch (e) {
                 console.error(e);
             }
@@ -473,7 +490,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = classSelect.value;
             if (id) { try{ localStorage.setItem('clientsSelectedClass', id); }catch(_){} loadRoster(id); }
         });
-        classSelect?.addEventListener('change', ()=>{ if(classSelect.value) { try{ localStorage.setItem('clientsSelectedClass', classSelect.value);}catch(_){} } });
+        classSelect?.addEventListener('change', ()=>{
+            const id = classSelect.value;
+            if(id){ try{ localStorage.setItem('clientsSelectedClass', id);}catch(_){} loadRoster(id); }
+            else {
+                clientsTbody.innerHTML = '<tr><td colspan="8">Select a class to load roster.</td></tr>';
+                document.getElementById('roster-title')?.textContent = 'Roster';
+                updateCapacityIndicator(0);
+                try { localStorage.removeItem('clientsSelectedClass'); } catch(_){ }
+            }
+        });
+        courseFilter?.addEventListener('change', () => {
+            try { localStorage.setItem('clientsSelectedCourse', courseFilter.value || ''); } catch(_){ }
+            // Clear class selection and roster, then reload classes filtered by course
+            if(classSelect){ classSelect.value = ''; }
+            clientsTbody.innerHTML = '<tr><td colspan="8">Select a class to load roster.</td></tr>';
+            document.getElementById('roster-title')?.textContent = 'Roster';
+            updateCapacityIndicator(0);
+            try { localStorage.removeItem('clientsSelectedClass'); } catch(_){ }
+            loadClassesForFilter();
+        });
 
         document.getElementById('export-roster-pdf')?.addEventListener('click', () => {
             const id = classSelect.value;
@@ -757,7 +793,9 @@ document.addEventListener('DOMContentLoaded', () => {
             tmp.src = blobUrl;
         });
 
-        loadClassesForFilter();
+    // Restore saved course first (then load classes filtered)
+    try { const savedCourse = localStorage.getItem('clientsSelectedCourse'); if(courseFilter && savedCourse !== null){ courseFilter.value = savedCourse; } } catch(_){ }
+    loadClassesForFilter();
         // Quick search filter
         const searchInput = document.getElementById('clients-search');
         function applyClientSearchFilter(){
