@@ -969,21 +969,99 @@ document.addEventListener('DOMContentLoaded', () => {
         const qrDownload = document.getElementById('qr-download');
         const qrCloseBtn = document.getElementById('qr-close-btn');
         let lastQrTrigger = null;
+        function buildQrUrls(link){
+            const encoded = encodeURIComponent(link);
+            return {
+                primary: `https://quickchart.io/qr?text=${encoded}&size=512&margin=1`,
+                fallback: `https://chart.googleapis.com/chart?chs=512x512&cht=qr&chld=M|1&chl=${encoded}`
+            };
+        }
+        function wrapText(ctx, text, maxWidth, lineHeight){
+            const words = String(text||'').split(/\s+/);
+            const lines = [];
+            let line = '';
+            words.forEach((w, idx) => {
+                const test = line ? line + ' ' + w : w;
+                if(ctx.measureText(test).width <= maxWidth){
+                    line = test;
+                } else {
+                    if(line) lines.push(line);
+                    line = w;
+                }
+                if(idx === words.length-1) lines.push(line);
+            });
+            return lines;
+        }
+        function buildQrComposite(img, title, subtitle){
+            const qrSize = Math.max(img.naturalWidth||0, img.width||512, 512);
+            const pad = 40;
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            // Prepare fonts
+            const titleFont = 'bold 32px Roboto, Arial, sans-serif';
+            const subFont = '20px Roboto, Arial, sans-serif';
+            // Measure wrapped text
+            const maxTextWidth = qrSize; // keep within QR width
+            ctx.font = titleFont;
+            const titleLines = wrapText(ctx, title||'Class', maxTextWidth, 38);
+            const titleLH = 38;
+            ctx.font = subFont;
+            const subLines = wrapText(ctx, subtitle||'', maxTextWidth, 26);
+            const subLH = 26;
+            const textHeight = (titleLines.length*titleLH) + (subLines.length? (12 + subLines.length*subLH) : 0);
+            canvas.width = qrSize + pad*2;
+            canvas.height = qrSize + pad*2 + textHeight + 10;
+            // Background
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            // Draw QR centered horizontally
+            const qrX = (canvas.width - qrSize)/2;
+            ctx.drawImage(img, qrX, pad, qrSize, qrSize);
+            // Draw text
+            let y = pad + qrSize + 28;
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#111';
+            ctx.font = titleFont;
+            titleLines.forEach(line => { ctx.fillText(line, canvas.width/2, y); y += titleLH; });
+            if(subLines.length){ y += 6; ctx.font = subFont; ctx.fillStyle = '#333'; subLines.forEach(line => { ctx.fillText(line, canvas.width/2, y); y += subLH; }); }
+            return canvas.toDataURL('image/png');
+        }
+        function suggestFilename(title, subtitle){
+            const safe = (s)=> String(s||'').replace(/\s+/g,' ').trim().replace(/[^\w\-\s]/g,'').replace(/\s/g,'-').slice(0,80);
+            const a = safe(title||'Class');
+            const b = safe(subtitle||'');
+            return `${a}${b?'-'+b:''}-QR.png`;
+        }
         function openQrModal(data){
             if(!qrModal) return;
             lastQrTrigger = document.activeElement;
             const base = location.origin; // if deployed behind domain includes schema + host
             const link = `${base}/class_checkin.html?class=${data.id}`;
             qrLinkInput.value = link;
-            // QuickChart QR API
-            const encoded = encodeURIComponent(link);
-            const qrUrl = `https://quickchart.io/qr?text=${encoded}&size=512&margin=1`; // high-res
-            qrImg.src = qrUrl;
+            // QR image with fallback
+            const { primary, fallback } = buildQrUrls(link);
+            qrImg.onload = () => {
+                try {
+                    const dt = data.start_datetime ? new Date(data.start_datetime.replace(' ', 'T')) : null;
+                    const dtLabel = dt ? dt.toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : 'Unscheduled';
+                    const composite = buildQrComposite(qrImg, data.course_type || 'Class', dtLabel);
+                    qrDownload.href = composite;
+                    qrDownload.download = suggestFilename(data.course_type, dtLabel);
+                } catch(_){ qrDownload.href = qrImg.src; }
+            };
+            qrImg.onerror = () => {
+                try {
+                    if(qrImg.src !== fallback){
+                        qrImg.src = fallback;
+                        showToast('Primary QR service unavailable; using fallback','warn');
+                    }
+                } catch(_){}
+            };
+            qrImg.src = primary;
             qrImg.alt = `QR code for class ${data.id}`;
             const dt = data.start_datetime ? new Date(data.start_datetime.replace(' ', 'T')) : null;
             const dtLabel = dt ? dt.toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : 'Unscheduled';
             qrMeta.innerHTML = `<strong>${data.course_type || 'Class'}</strong><br>${dtLabel}<br>${data.location || ''}`;
-            qrDownload.href = qrUrl;
             qrModal.classList.remove('hidden');
             qrCopyBtn.focus();
         }
