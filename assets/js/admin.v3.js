@@ -625,36 +625,59 @@ document.addEventListener('DOMContentLoaded', () => {
         const rosterQrDownload = document.getElementById('roster-qr-download');
         const rosterQrClose = document.getElementById('roster-qr-close');
         let lastRosterQrTrigger = null;
+
+        function buildCheckInLink(id){
+            const base = location.origin;
+            return `${base}/class_checkin.html?class=${encodeURIComponent(id)}`; // lowercase param
+        }
+        function buildQrUrls(link){
+            const encoded = encodeURIComponent(link);
+            return {
+                primary: `https://quickchart.io/qr?text=${encoded}&size=512&margin=1`,
+                fallback: `https://chart.googleapis.com/chart?chs=512x512&cht=qr&chld=M|1&chl=${encoded}`
+            };
+        }
         function openRosterQr(){
             const id = classSelect.value;
             if(!id){ showToast('Select a class first','warn'); return; }
             const opt = classSelect.selectedOptions[0];
             let data = { id };
             try { data = JSON.parse((opt.getAttribute('data-json')||'').replace(/&#39;/g,'"')) || data; } catch(_){ }
-            const base = location.origin;
-            const link = `${base}/class_checkin.html?class=${id}`;
-            const encoded = encodeURIComponent(link);
-            const qrUrl = `https://quickchart.io/qr?text=${encoded}&size=512&margin=1`;
-            rosterQrLink.value = link;
-            rosterQrImg.src = qrUrl;
-            rosterQrImg.alt = `QR code for class ${id}`;
+            const link = buildCheckInLink(id);
+            const { primary, fallback } = buildQrUrls(link);
+            if(rosterQrLink) rosterQrLink.value = link;
+            if(rosterQrImg){
+                rosterQrImg.alt = `QR code for class ${id}`;
+                rosterQrImg.onload = () => { try { rosterQrDownload.href = rosterQrImg.src; } catch(_){} };
+                rosterQrImg.onerror = () => {
+                    try {
+                        if(rosterQrImg.src !== fallback){
+                            rosterQrImg.src = fallback;
+                            showToast('Primary QR service unavailable; using fallback','warn');
+                        }
+                    } catch(_){ }
+                };
+                rosterQrImg.src = primary;
+            }
             const dt = data.start_datetime ? new Date(data.start_datetime.replace(' ', 'T')) : null;
             const dtLabel = dt ? dt.toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : 'Unscheduled';
-            rosterQrMeta.innerHTML = `<strong>${data.course_type || 'Class'}</strong><br>${dtLabel}<br>${data.location || ''}`;
-            rosterQrDownload.href = qrUrl;
+            if(rosterQrMeta) rosterQrMeta.innerHTML = `<strong>${data.course_type || 'Class'}</strong><br>${dtLabel}<br>${data.location || ''}`;
+            if(rosterQrDownload) rosterQrDownload.href = primary;
             lastRosterQrTrigger = document.activeElement;
             rosterQrModal?.classList.remove('hidden');
             rosterQrCopy?.focus();
         }
-        rosterQrBtn?.addEventListener('click', openRosterQr);
         function closeRosterQr(){ rosterQrModal?.classList.add('hidden'); lastRosterQrTrigger?.focus?.(); }
+        rosterQrBtn?.addEventListener('click', openRosterQr);
         rosterQrClose?.addEventListener('click', closeRosterQr);
         rosterQrModal?.addEventListener('click', (e)=>{ if(e.target===rosterQrModal) closeRosterQr(); });
         document.addEventListener('keydown', (e)=>{ if(!rosterQrModal?.classList.contains('hidden') && e.key==='Escape') closeRosterQr(); });
         rosterQrCopy?.addEventListener('click', () => {
-            rosterQrLink?.select?.();
-            try { document.execCommand('copy'); showToast('Link copied','success'); } catch(_){ navigator.clipboard?.writeText(rosterQrLink.value).then(()=>showToast('Link copied','success')).catch(()=>showToast('Copy failed','error')); }
-            rosterQrLink?.setSelectionRange?.(0,0);
+            if(!rosterQrLink) return;
+            rosterQrLink.select();
+            try { document.execCommand('copy'); showToast('Link copied','success'); }
+            catch(_){ navigator.clipboard?.writeText(rosterQrLink.value).then(()=>showToast('Link copied','success')).catch(()=>showToast('Copy failed','error')); }
+            rosterQrLink.setSelectionRange(0,0);
         });
 
         loadClassesForFilter();
