@@ -637,6 +637,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 fallback: `https://chart.googleapis.com/chart?chs=512x512&cht=qr&chld=M|1&chl=${encoded}`
             };
         }
+        function wrapRosterText(ctx, text, maxWidth, lineHeight){
+            const words = String(text||'').split(/\s+/);
+            const lines = [];
+            let line = '';
+            words.forEach((w, i) => {
+                const test = line ? line + ' ' + w : w;
+                if(ctx.measureText(test).width <= maxWidth){
+                    line = test;
+                } else {
+                    if(line) lines.push(line);
+                    line = w;
+                }
+                if(i === words.length-1) lines.push(line);
+            });
+            return lines;
+        }
+        function buildRosterQrComposite(img, title, subtitle){
+            const qrSize = 512;
+            const pad = 40;
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const nameFont = 'bold 26px Roboto, Arial, sans-serif';
+            const dateFont = '34px Roboto, Arial, sans-serif';
+            const maxTextWidth = qrSize;
+            ctx.font = nameFont; const nameLines = wrapRosterText(ctx, title||'Class', maxTextWidth, 32); const nameLH = 32;
+            ctx.font = dateFont; const dateLines = wrapRosterText(ctx, subtitle||'', maxTextWidth, 40); const dateLH = 40;
+            const textHeight = (nameLines.length*nameLH) + (dateLines.length? (12 + dateLines.length*dateLH) : 0);
+            canvas.width = qrSize + pad*2;
+            canvas.height = qrSize + pad*2 + textHeight + 10;
+            ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+            const qrX = (canvas.width - qrSize)/2; ctx.drawImage(img, qrX, pad, qrSize, qrSize);
+            let y = pad + qrSize + 28; ctx.textAlign = 'center'; ctx.fillStyle = '#111'; ctx.font = nameFont;
+            nameLines.forEach(line => { ctx.fillText(line, canvas.width/2, y); y += nameLH; });
+            if(dateLines.length){ y += 6; ctx.font = dateFont; ctx.fillStyle = '#333'; dateLines.forEach(line => { ctx.fillText(line, canvas.width/2, y); y += dateLH; }); }
+            return canvas.toDataURL('image/png');
+        }
+        function rosterSuggestFilename(title, subtitle){
+            const safe = (s)=> String(s||'').replace(/\s+/g,' ').trim().replace(/[^\w\-\s]/g,'').replace(/\s/g,'-').slice(0,80);
+            const a = safe(title||'Class'); const b = safe(subtitle||''); return `${a}${b?'-'+b:''}-QR.png`;
+        }
+        async function rosterFetchBlobUrl(url){
+            try { const res = await fetch(url, { mode:'cors' }); if(!res.ok) throw new Error('fetch failed'); const blob = await res.blob(); return URL.createObjectURL(blob); } catch(_){ return null; }
+        }
         function openRosterQr(){
             const id = classSelect.value;
             if(!id){ showToast('Select a class first','warn'); return; }
@@ -648,7 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(rosterQrLink) rosterQrLink.value = link;
             if(rosterQrImg){
                 rosterQrImg.alt = `QR code for class ${id}`;
-                rosterQrImg.onload = () => { try { rosterQrDownload.href = rosterQrImg.src; } catch(_){} };
+                // No-op onload; composition handled on click
                 rosterQrImg.onerror = () => {
                     try {
                         if(rosterQrImg.src !== fallback){
@@ -657,12 +700,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     } catch(_){ }
                 };
+                try { rosterQrImg.crossOrigin = 'anonymous'; } catch(_){ }
                 rosterQrImg.src = primary;
             }
             const dt = data.start_datetime ? new Date(data.start_datetime.replace(' ', 'T')) : null;
             const dtLabel = dt ? dt.toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : 'Unscheduled';
             if(rosterQrMeta) rosterQrMeta.innerHTML = `<strong>${data.course_type || 'Class'}</strong><br>${dtLabel}<br>${data.location || ''}`;
-            if(rosterQrDownload) rosterQrDownload.href = primary;
+            if(rosterQrDownload){
+                // Prevent navigation and store metadata for click handler
+                rosterQrDownload.href = 'javascript:void(0)';
+                rosterQrDownload.dataset.title = data.course_type || 'Class';
+                rosterQrDownload.dataset.dt = dtLabel;
+                rosterQrDownload.dataset.link = link;
+                rosterQrDownload.download = rosterSuggestFilename(data.course_type, dtLabel);
+            }
             lastRosterQrTrigger = document.activeElement;
             rosterQrModal?.classList.remove('hidden');
             rosterQrCopy?.focus();
@@ -678,6 +729,32 @@ document.addEventListener('DOMContentLoaded', () => {
             try { document.execCommand('copy'); showToast('Link copied','success'); }
             catch(_){ navigator.clipboard?.writeText(rosterQrLink.value).then(()=>showToast('Link copied','success')).catch(()=>showToast('Copy failed','error')); }
             rosterQrLink.setSelectionRange(0,0);
+        });
+        rosterQrDownload?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const link = rosterQrDownload?.dataset?.link || rosterQrLink?.value || '';
+            if(!link){ showToast('No link available for QR','error'); return; }
+            const title = rosterQrDownload.dataset.title;
+            const dateLabel = rosterQrDownload.dataset.dt;
+            const { primary } = buildQrUrls(link);
+            // Try direct compose from displayed image first
+            try {
+                const directUrl = buildRosterQrComposite(rosterQrImg, title, dateLabel);
+                if(directUrl){ const a = document.createElement('a'); a.href = directUrl; a.download = rosterSuggestFilename(title, dateLabel); document.body.appendChild(a); a.click(); a.remove(); return; }
+            } catch(_){ }
+            // Fallback: fetch blob and compose
+            const blobUrl = await rosterFetchBlobUrl(primary);
+            if(!blobUrl){ try { window.open(rosterQrImg.src, '_blank'); } catch(_){ } showToast('Could not embed text; downloaded QR only','warn'); return; }
+            const tmp = new Image();
+            tmp.onload = () => {
+                try {
+                    const dataUrl = buildRosterQrComposite(tmp, title, dateLabel);
+                    const a = document.createElement('a'); a.href = dataUrl; a.download = rosterSuggestFilename(title, dateLabel); document.body.appendChild(a); a.click(); a.remove();
+                } catch(_){ try { window.open(rosterQrImg.src, '_blank'); } catch(__){} showToast('Could not embed text; downloaded QR only','warn'); }
+                finally { URL.revokeObjectURL(blobUrl); }
+            };
+            tmp.onerror = () => { try { window.open(rosterQrImg.src, '_blank'); } catch(_){ } showToast('Could not embed text; downloaded QR only','warn'); URL.revokeObjectURL(blobUrl); };
+            tmp.src = blobUrl;
         });
 
         loadClassesForFilter();
