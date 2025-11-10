@@ -993,22 +993,22 @@ document.addEventListener('DOMContentLoaded', () => {
             return lines;
         }
         function buildQrComposite(img, title, subtitle){
-            const qrSize = Math.max(img.naturalWidth||0, img.width||512, 512);
+            const qrSize = 512; // normalize output size
             const pad = 40;
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             // Prepare fonts
-            const titleFont = 'bold 32px Roboto, Arial, sans-serif';
-            const subFont = '20px Roboto, Arial, sans-serif';
+            const nameFont = 'bold 26px Roboto, Arial, sans-serif'; // class name bold
+            const dateFont = '34px Roboto, Arial, sans-serif'; // date ~h2 size
             // Measure wrapped text
             const maxTextWidth = qrSize; // keep within QR width
-            ctx.font = titleFont;
-            const titleLines = wrapText(ctx, title||'Class', maxTextWidth, 38);
-            const titleLH = 38;
-            ctx.font = subFont;
-            const subLines = wrapText(ctx, subtitle||'', maxTextWidth, 26);
-            const subLH = 26;
-            const textHeight = (titleLines.length*titleLH) + (subLines.length? (12 + subLines.length*subLH) : 0);
+            ctx.font = nameFont;
+            const nameLines = wrapText(ctx, title||'Class', maxTextWidth, 32);
+            const nameLH = 32;
+            ctx.font = dateFont;
+            const dateLines = wrapText(ctx, subtitle||'', maxTextWidth, 40);
+            const dateLH = 40;
+            const textHeight = (nameLines.length*nameLH) + (dateLines.length? (12 + dateLines.length*dateLH) : 0);
             canvas.width = qrSize + pad*2;
             canvas.height = qrSize + pad*2 + textHeight + 10;
             // Background
@@ -1021,9 +1021,9 @@ document.addEventListener('DOMContentLoaded', () => {
             let y = pad + qrSize + 28;
             ctx.textAlign = 'center';
             ctx.fillStyle = '#111';
-            ctx.font = titleFont;
-            titleLines.forEach(line => { ctx.fillText(line, canvas.width/2, y); y += titleLH; });
-            if(subLines.length){ y += 6; ctx.font = subFont; ctx.fillStyle = '#333'; subLines.forEach(line => { ctx.fillText(line, canvas.width/2, y); y += subLH; }); }
+            ctx.font = nameFont; // Class name (bold)
+            nameLines.forEach(line => { ctx.fillText(line, canvas.width/2, y); y += nameLH; });
+            if(dateLines.length){ y += 6; ctx.font = dateFont; ctx.fillStyle = '#333'; dateLines.forEach(line => { ctx.fillText(line, canvas.width/2, y); y += dateLH; }); }
             return canvas.toDataURL('image/png');
         }
         function suggestFilename(title, subtitle){
@@ -1031,6 +1031,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const a = safe(title||'Class');
             const b = safe(subtitle||'');
             return `${a}${b?'-'+b:''}-QR.png`;
+        }
+        async function fetchImageAsBlobUrl(url){
+            try {
+                const res = await fetch(url, { mode: 'cors' });
+                if(!res.ok) throw new Error('fetch failed');
+                const blob = await res.blob();
+                return URL.createObjectURL(blob);
+            } catch(err){ return null; }
+        }
+        async function ensureImageLoaded(img){
+            if(img.complete && img.naturalWidth>0) return;
+            await new Promise((resolve, reject)=>{
+                img.onload = ()=> resolve();
+                img.onerror = ()=> reject(new Error('img load error'));
+            });
         }
         function openQrModal(data){
             if(!qrModal) return;
@@ -1040,15 +1055,12 @@ document.addEventListener('DOMContentLoaded', () => {
             qrLinkInput.value = link;
             // QR image with fallback
             const { primary, fallback } = buildQrUrls(link);
-            qrImg.onload = () => {
-                try {
-                    const dt = data.start_datetime ? new Date(data.start_datetime.replace(' ', 'T')) : null;
-                    const dtLabel = dt ? dt.toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : 'Unscheduled';
-                    const composite = buildQrComposite(qrImg, data.course_type || 'Class', dtLabel);
-                    qrDownload.href = composite;
-                    qrDownload.download = suggestFilename(data.course_type, dtLabel);
-                } catch(_){ qrDownload.href = qrImg.src; }
-            };
+            // store metadata for download click
+            const dt = data.start_datetime ? new Date(data.start_datetime.replace(' ', 'T')) : null;
+            const dtLabel = dt ? dt.toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : 'Unscheduled';
+            qrDownload.dataset.title = data.course_type || 'Class';
+            qrDownload.dataset.dt = dtLabel;
+            qrDownload.dataset.link = link;
             qrImg.onerror = () => {
                 try {
                     if(qrImg.src !== fallback){
@@ -1057,14 +1069,46 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } catch(_){}
             };
+            try { qrImg.crossOrigin = 'anonymous'; } catch(_){}
             qrImg.src = primary;
             qrImg.alt = `QR code for class ${data.id}`;
-            const dt = data.start_datetime ? new Date(data.start_datetime.replace(' ', 'T')) : null;
-            const dtLabel = dt ? dt.toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : 'Unscheduled';
             qrMeta.innerHTML = `<strong>${data.course_type || 'Class'}</strong><br>${dtLabel}<br>${data.location || ''}`;
             qrModal.classList.remove('hidden');
             qrCopyBtn.focus();
         }
+        qrDownload?.addEventListener('click', async (e) => {
+            if(!qrDownload?.dataset?.link) return;
+            e.preventDefault();
+            const link = qrDownload.dataset.link;
+            const title = qrDownload.dataset.title;
+            const dateLabel = qrDownload.dataset.dt;
+            const { primary } = buildQrUrls(link);
+            // Fetch QR as blob to avoid CORS taint, then compose
+            const blobUrl = await fetchImageAsBlobUrl(primary);
+            if(!blobUrl){
+                try { window.open(qrImg.src, '_blank'); } catch(_){}
+                showToast('Could not embed text due to network/CORS; downloaded QR only','warn');
+                return;
+            }
+            const tmp = new Image();
+            tmp.onload = () => {
+                try {
+                    const dataUrl = buildQrComposite(tmp, title, dateLabel);
+                    const a = document.createElement('a');
+                    a.href = dataUrl; a.download = suggestFilename(title, dateLabel);
+                    document.body.appendChild(a); a.click(); a.remove();
+                } catch(err){
+                    try { window.open(qrImg.src, '_blank'); } catch(_){}
+                    showToast('Could not embed text; downloaded QR only','warn');
+                } finally { URL.revokeObjectURL(blobUrl); }
+            };
+            tmp.onerror = () => {
+                try { window.open(qrImg.src, '_blank'); } catch(_){}
+                showToast('Could not embed text; downloaded QR only','warn');
+                URL.revokeObjectURL(blobUrl);
+            };
+            tmp.src = blobUrl;
+        });
         function closeQrModal(){ qrModal?.classList.add('hidden'); lastQrTrigger?.focus?.(); }
         qrCloseBtn?.addEventListener('click', closeQrModal);
         qrModal?.addEventListener('click', (e)=>{ if(e.target===qrModal) closeQrModal(); });
