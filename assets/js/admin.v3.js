@@ -1061,6 +1061,8 @@ document.addEventListener('DOMContentLoaded', () => {
             qrDownload.dataset.title = data.course_type || 'Class';
             qrDownload.dataset.dt = dtLabel;
             qrDownload.dataset.link = link;
+            // Avoid default navigation on anchor
+            try { qrDownload.href = 'javascript:void(0)'; } catch(_){}
             qrImg.onerror = () => {
                 try {
                     if(qrImg.src !== fallback){
@@ -1077,9 +1079,9 @@ document.addEventListener('DOMContentLoaded', () => {
             qrCopyBtn.focus();
         }
         qrDownload?.addEventListener('click', async (e) => {
-            if(!qrDownload?.dataset?.link) return;
             e.preventDefault();
-            const link = qrDownload.dataset.link;
+            const link = qrDownload?.dataset?.link || qrLinkInput?.value || '';
+            if(!link){ showToast('No link available for QR','error'); return; }
             const title = qrDownload.dataset.title;
             const dateLabel = qrDownload.dataset.dt;
             const { primary } = buildQrUrls(link);
