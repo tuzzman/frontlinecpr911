@@ -432,8 +432,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const selectedMonth = monthFilter?.value || ''; // format YYYY-MM
                 let list = json.classes || [];
                 if(selectedCourse){
-                    const sc = String(selectedCourse).trim().toLowerCase();
-                    list = list.filter(c => String(c.course_type||'').trim().toLowerCase() === sc);
+                    // Robust course matching: normalize punctuation/spacing; try exact first, then partial include
+                    const canon = (s) => String(s||'').toLowerCase()
+                        .replace(/&/g,'and')
+                        .replace(/[@+]/g,' and ')
+                        .replace(/[^a-z0-9]+/g,' ')
+                        .replace(/\s+/g,' ').trim();
+                    const sc = canon(selectedCourse);
+                    let eq = list.filter(c => canon(c.course_type) === sc);
+                    if(eq.length === 0){
+                        // Fallback: includes either direction to tolerate naming variations
+                        eq = list.filter(c => {
+                            const cc = canon(c.course_type);
+                            return cc.includes(sc) || sc.includes(cc);
+                        });
+                    }
+                    list = eq;
                 }
                 if(selectedMonth){
                     // Normalize to YYYY-MM regardless of input format
@@ -471,6 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     opt.setAttribute('data-json', JSON.stringify(c).replace(/'/g,"&#39;"));
                     classSelect.appendChild(opt);
                 });
+                try { console.debug('[Clients] Filter result', { selectedCourse, selectedMonth, count: list.length }); } catch(_){ }
                 // Restore selection only if saved class is still available in current filtered list
                 try {
                     const savedId = localStorage.getItem('clientsSelectedClass');
