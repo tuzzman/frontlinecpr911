@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Classes • FrontlineCPR911</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/tab_icon.ico">
+  <link rel="stylesheet" href="assets/css/style20251106.css">
+  <style>
+    /* Minimal additions for session cards and toolbar without touching global CSS */
+    .classes-toolbar { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; margin-bottom: .75rem; }
+    .classes-toolbar select, .classes-toolbar input[type=month] { padding:.45rem .5rem; border:1px solid #ccc; border-radius:4px; }
+    .session-grid { display:grid; gap: .75rem; grid-template-columns: 1fr; }
+    @media (min-width:640px){ .session-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (min-width:980px){ .session-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+    .session-card { background:#fff; border:1px solid var(--color-light-gray); border-radius:8px; padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:.35rem; }
+    .session-title { margin:0; font-size:1.05rem; }
+    .session-meta { font-size:.92rem; opacity:.9; }
+    .session-actions { margin-top:.5rem; display:flex; gap:.5rem; align-items:center; }
+    .capacity-badge { font-size:.85rem; padding:.15rem .4rem; border-radius:4px; background:#eef2ff; color:#222; }
+    .capacity-badge.full { background:#ffe8e8; color:#8a1c1c; }
+    .btn-small { padding:.45rem .65rem; font-size:.92rem; }
+    .skeleton { position:relative; overflow:hidden; background:#f5f5f5; min-height:110px; border-radius:8px; }
+    .skeleton::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); transform:translateX(-100%); animation: shimmer 1.6s infinite; }
+    @keyframes shimmer { 100% { transform:translateX(100%);} }
+    /* Simple modal */
+    .modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:1000; }
+    .modal.open { display:flex; }
+    .modal-content { width:min(640px, 92%); background:#fff; border-radius:8px; padding:1rem 1rem 1.25rem; box-shadow:0 10px 30px rgba(0,0,0,.2); }
+    .modal-actions { display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.75rem; }
+    .modal .field { margin:.5rem 0; }
+    .modal label { font-weight:700; font-size:.9rem; display:block; margin-bottom:.25rem; }
+    .modal input { width:100%; padding:.55rem .65rem; border:1px solid #ccc; border-radius:4px; }
+    .alert { padding:.55rem .7rem; border:1px solid #ddd; border-radius:4px; font-size:.9rem; }
+    .alert.success { background:#ecfdf5; border-color:#86efac; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-content">
+      <div class="logo">
+        <a href="index.html"><h1>Frontline<span class="cpr">CPR</span>911</h1></a>
+      </div>
+      <nav class="main-nav">
+        <button class="menu-toggle" aria-expanded="false">☰</button>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="classes.html">Group Training</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="header-ekg-container">
+      <svg class="ekg-svg" viewBox="0 0 1000 56" preserveAspectRatio="none" aria-hidden="true">
+        <path class="ekg-path" d="M20 28 H120 L140 28 L150 8 L170 48 L190 28 H380 L420 28 L440 28 L460 12 L480 44 L500 28 H980" />
+      </svg>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="section hero-classes">
+    <div class="container">
+      <h1>Upcoming CPR & First Aid Classes</h1>
+      <p>Choose a course below or browse upcoming sessions to sign up.</p>
+    </div>
+  </section>
+
+  <!-- Course Catalog (reusing home card style) -->
+  <section class="section course-catalog-section">
+    <div class="container">
+      <h2>Course Catalog</h2>
+      <div class="courses-grid" id="catalog-cards">
+        <!-- Filled by JS with the same style as homepage -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Upcoming Sessions -->
+  <section class="section upcoming-classes-section" id="upcoming-section" style="background-color: var(--color-light-gray);">
+    <div class="container">
+      <h2>Upcoming Sessions</h2>
+      <div class="classes-toolbar">
+        <label for="filter-course" class="sr-only">Course</label>
+        <select id="filter-course">
+          <option value="">All Courses</option>
+          <option value="BLS Provider">BLS Provider</option>
+          <option value="Heartsaver CPR/AED">Heartsaver CPR/AED</option>
+          <option value="First Aid + CPR">First Aid + CPR</option>
+        </select>
+        <label for="filter-month" class="sr-only">Month</label>
+        <input type="month" id="filter-month" />
+        <button class="btn btn-secondary btn-small" id="filter-reset" type="button">Reset</button>
+      </div>
+      <div id="sessions-grid" class="session-grid" aria-live="polite">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Group CTA -->
+  <section class="section group-cta">
+    <div class="container">
+      <h2>Need On‑Site Training for Your Team?</h2>
+      <p>We offer private, on‑site AHA-compliant training tailored to your schedule.</p>
+      <a href="classes.html" class="btn btn-primary">Request Group Quote</a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 FrontlineCPR911 Training. All rights reserved. | <a href="admin/dashboard.html">Admin Login</a></p>
+      <p>Training proudly based on Current AHA Guidelines.</p>
+    </div>
+  </footer>
+
+  <!-- Signup Modal -->
+  <div id="signup-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="signupTitle">
+    <div class="modal-content">
+      <h2 id="signupTitle">Register for Class</h2>
+      <div id="signup-meta" class="session-meta" style="margin-bottom:.35rem;"></div>
+      <div id="signup-capacity" class="capacity-badge" style="margin-bottom:.35rem;"></div>
+      <form id="signup-form">
+        <div class="field"><label for="su-first">First Name</label><input id="su-first" required></div>
+        <div class="field"><label for="su-last">Last Name</label><input id="su-last" required></div>
+        <div class="field"><label for="su-email">Email</label><input id="su-email" type="email" required></div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Confirm Registration</button>
+          <button type="button" class="btn btn-secondary" id="signup-cancel">Cancel</button>
+        </div>
+      </form>
+      <div id="signup-success" class="alert success" style="display:none; margin-top:.5rem;">You're registered! A confirmation email will be sent shortly.</div>
+    </div>
+  </div>
+
+  <script src="assets/js/catalog.js"></script>
+</body>
+</html>
