@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const exportBtn = document.getElementById('export-gr');
 
         let grAbortController = null;
-        async function loadGroupRequests() {
+        async function loadClasses() {
             const params = new URLSearchParams();
             if (statusFilter && statusFilter.value) params.set('status', statusFilter.value);
             if (fromInput && fromInput.value) params.set('from', fromInput.value);
@@ -902,7 +902,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        loadClasses();
+    // Open/close Create Class modal wiring
+    const createModal = document.getElementById('create-class-modal');
+    const openCreateBtn = document.getElementById('open-create-class');
+    const createCancelBtn = document.getElementById('create-class-cancel');
+    const createCloseBtn = document.getElementById('create-class-close');
+    let lastCreateTrigger = null;
+    function openCreateModal(){ if(!createModal) return; lastCreateTrigger = document.activeElement; createModal.classList.remove('hidden'); document.getElementById('cc-course')?.focus(); }
+    function closeCreateModal(){ if(!createModal) return; createModal.classList.add('hidden'); lastCreateTrigger?.focus?.(); }
+    openCreateBtn?.addEventListener('click', openCreateModal);
+    createCancelBtn?.addEventListener('click', closeCreateModal);
+    createCloseBtn?.addEventListener('click', closeCreateModal);
+    createModal?.addEventListener('click', (e)=>{ if(e.target===createModal) closeCreateModal(); });
+    document.addEventListener('keydown', (e)=>{ if(!createModal?.classList.contains('hidden') && e.key==='Escape') closeCreateModal(); });
+
+    loadClasses();
         // --- Edit Modal Logic ---
         const modal = document.getElementById('edit-class-modal');
         const editForm = document.getElementById('class-edit-form');

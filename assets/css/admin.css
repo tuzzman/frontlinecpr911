@@ -1,3 +1,32 @@
+/* Utility */
+.hidden { display: none !important; }
+
+/* Basic modal styling used across admin */
+.admin-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.5);
+    z-index: 1000;
+    padding: 1rem;
+}
+.admin-modal .admin-modal-content{
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    width: min(720px, 92vw);
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,.2);
+}
+.admin-modal .qr-image{ max-width:100%; height:auto; display:block; margin: .5rem auto; }
+.admin-modal .modal-actions{ display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+.admin-modal .qr-link{ flex:1; min-width: 240px; }
+
+/* Header bar alignment for classes */
+.classes-header-bar .btn-action{ margin-left: auto; }
 /*
  * FRONT LINECPR911 ADMIN STYLESHEET
  * Focus: Clean, Functional, and Secure Login/Dashboard Interface
