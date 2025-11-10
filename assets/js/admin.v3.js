@@ -1083,7 +1083,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const title = qrDownload.dataset.title;
             const dateLabel = qrDownload.dataset.dt;
             const { primary } = buildQrUrls(link);
-            // Fetch QR as blob to avoid CORS taint, then compose
+            // 1) Try composing directly from the displayed image (fast path)
+            try {
+                const directUrl = buildQrComposite(qrImg, title, dateLabel);
+                if(directUrl){
+                    const a = document.createElement('a');
+                    a.href = directUrl; a.download = suggestFilename(title, dateLabel);
+                    document.body.appendChild(a); a.click(); a.remove();
+                    return;
+                }
+            } catch(_){ /* likely canvas taint; fall through */ }
+            // 2) Fetch QR as blob to avoid CORS taint, then compose
             const blobUrl = await fetchImageAsBlobUrl(primary);
             if(!blobUrl){
                 try { window.open(qrImg.src, '_blank'); } catch(_){}
