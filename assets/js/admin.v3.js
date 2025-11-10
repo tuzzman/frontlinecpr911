@@ -471,17 +471,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     opt.setAttribute('data-json', JSON.stringify(c).replace(/'/g,"&#39;"));
                     classSelect.appendChild(opt);
                 });
-                // Restore selection
-                // Try restore saved class if present in current filtered list
+                // Restore selection only if saved class is still available in current filtered list
                 try {
                     const savedId = localStorage.getItem('clientsSelectedClass');
                     if(savedId && classSelect.querySelector(`option[value=\"${savedId}\"]`)) {
                         classSelect.value = savedId;
                         loadRoster(savedId);
-                    } else {
-                        clientsTbody.innerHTML = '<tr><td colspan="8">Select a class to load roster.</td></tr>';
-                        document.getElementById('roster-title')?.textContent = 'Roster';
-                        updateCapacityIndicator(0);
                     }
                 } catch(_){ }
             } catch (e) {
@@ -535,16 +530,18 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCapacityIndicator(0);
             try { localStorage.removeItem('clientsSelectedClass'); } catch(_){ }
         }
+        // Course change: immediately show classes filtered by course only (month optional)
         courseFilter?.addEventListener('change', () => {
             try { localStorage.setItem('clientsSelectedCourse', courseFilter.value || ''); } catch(_){ }
-            if(classSelect){ classSelect.innerHTML = '<option value="">-- Select Course & Month First --</option>'; classSelect.value=''; }
-            resetRosterPrompt('Choose course & month to view classes.');
+            if(classSelect){ classSelect.innerHTML = '<option value="">-- Select Class --</option>'; classSelect.value=''; }
+            resetRosterPrompt('Select a class to load roster.');
             loadClassesForFilter();
         });
+        // Month change: refine existing course filter if month provided
         monthFilter?.addEventListener('change', () => {
             try { localStorage.setItem('clientsSelectedMonth', monthFilter.value || ''); } catch(_){ }
-            if(classSelect){ classSelect.innerHTML = '<option value="">-- Select Course & Month First --</option>'; classSelect.value=''; }
-            resetRosterPrompt('Choose course & month to view classes.');
+            if(classSelect){ classSelect.innerHTML = '<option value="">-- Select Class --</option>'; classSelect.value=''; }
+            resetRosterPrompt('Select a class to load roster.');
             loadClassesForFilter();
         });
 
