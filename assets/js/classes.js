@@ -68,7 +68,7 @@ let activeSessionId = null;
 // Fetch sessions from API
 async function fetchSessions() {
   try {
-    const response = await fetch(`${API_BASE}/classes.php`);
+    const response = await fetch(`${API_BASE}/classes.php?public=true`);
     if (!response.ok) throw new Error('Failed to fetch classes');
     
     const result = await response.json();

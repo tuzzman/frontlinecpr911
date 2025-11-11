@@ -6,22 +6,48 @@ $method = effective_method();
 if ($method === 'GET') {
     $public = isset($_GET['public']);
     $idParam = isset($_GET['id']) ? (int)$_GET['id'] : null;
+    
     if ($public) {
-        // Public single-class fetch (limited fields)
-        if (!$idParam) json_response(400, ['success'=>false,'message'=>'id required']);
-        $stmt = $pdo->prepare('SELECT id, course_type, start_datetime, location, price, max_capacity FROM classes WHERE id = :id');
-        $stmt->execute([':id'=>$idParam]);
-        $row = $stmt->fetch();
-        if (!$row) json_response(404, ['success'=>false,'message'=>'Class not found']);
-        // Registration count & spots_left
-        $rStmt = $pdo->prepare('SELECT COUNT(*) AS registrations FROM registrations WHERE class_id = :cid');
-        $rStmt->execute([':cid'=>$row['id']]);
-        $reg = (int)$rStmt->fetch()['registrations'];
-        $row['registrations'] = $reg;
-        $maxCap = isset($row['max_capacity']) ? (int)$row['max_capacity'] : null;
-        $row['spots_left'] = $maxCap !== null ? max($maxCap - $reg, 0) : null;
-        json_response(200, ['success'=>true,'data'=>$row]);
+        // Public listing or single-class fetch
+        if ($idParam) {
+            // Single class fetch
+            $stmt = $pdo->prepare('SELECT id, course_type, start_datetime, location, price, max_capacity FROM classes WHERE id = :id');
+            $stmt->execute([':id'=>$idParam]);
+            $row = $stmt->fetch();
+            if (!$row) json_response(404, ['success'=>false,'message'=>'Class not found']);
+            // Registration count & spots_left
+            $rStmt = $pdo->prepare('SELECT COUNT(*) AS registrations FROM registrations WHERE class_id = :cid');
+            $rStmt->execute([':cid'=>$row['id']]);
+            $reg = (int)$rStmt->fetch()['registrations'];
+            $row['registrations'] = $reg;
+            $maxCap = isset($row['max_capacity']) ? (int)$row['max_capacity'] : null;
+            $row['spots_left'] = $maxCap !== null ? max($maxCap - $reg, 0) : null;
+            json_response(200, ['success'=>true,'data'=>$row]);
+        } else {
+            // Public listing - all upcoming classes
+            $stmt = $pdo->query('SELECT id, course_type, start_datetime, location, price, max_capacity FROM classes ORDER BY start_datetime ASC');
+            $rows = $stmt->fetchAll();
+            if ($rows) {
+                $ids = array_column($rows, 'id');
+                if ($ids) {
+                    $in = implode(',', array_map('intval', $ids));
+                    $rStmt = $pdo->query("SELECT class_id, COUNT(*) AS registrations FROM registrations WHERE class_id IN ($in) GROUP BY class_id");
+                    $counts = [];
+                    foreach ($rStmt->fetchAll() as $r) { $counts[(int)$r['class_id']] = (int)$r['registrations']; }
+                    foreach ($rows as &$c) {
+                        $cid = (int)$c['id'];
+                        $reg = $counts[$cid] ?? 0;
+                        $c['registrations'] = $reg;
+                        $maxCap = isset($c['max_capacity']) ? (int)$c['max_capacity'] : null;
+                        $c['spots_left'] = $maxCap !== null ? max($maxCap - $reg, 0) : null;
+                    }
+                    unset($c);
+                }
+            }
+            json_response(200, ['success'=>true,'data'=>$rows]);
+        }
     }
+    
     // Admin listing (unchanged logic)
     require_admin($pdo);
     $stmt = $pdo->query('SELECT id, course_type, start_datetime, location, price, max_capacity, notes, created_at FROM classes ORDER BY start_datetime DESC');
