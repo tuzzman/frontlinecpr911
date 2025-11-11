@@ -2,7 +2,7 @@
    Fetches live data from API and displays in chronological timeline format.
 */
 
-const API_BASE = 'https://frontlinecpr911.com/api';
+const API_BASE = '/api';
 
 // Utility functions
 function formatTime(dtStr) {
