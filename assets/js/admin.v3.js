@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Restore selection only if saved class is still available in current filtered list
                 try {
                     const savedId = localStorage.getItem('clientsSelectedClass');
-                    if(savedId && classSelect.querySelector(`option[value=\"${savedId}\"]`)) {
+                    if(savedId && classSelect.querySelector(`option[value="${savedId}"]`)) {
                         classSelect.value = savedId;
                         loadRoster(savedId);
                     }
