@@ -1,331 +1,53 @@
-<!DOCTYPE html><!DOCTYPE html>
-
-<html lang="en"><html lang="en">
-
-<head><head>
-
-  <meta charset="UTF-8" />    <meta charset="UTF-8">
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Classes • FrontlineCPR911</title>    <title>FrontlineCPR911 | Group CPR/First Aid Training Requests</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">    
-
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>    <link rel="icon" href="/tab_icon.ico">
-
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">    <link rel="stylesheet" href="assets/css/style20251106.css">
-
-  <link rel="icon" href="/tab_icon.ico">    <style>/* ensure ekg visible above header gradient even if CDN caches CSS */ .header-ekg-container{z-index:1000 !important;}</style>
-
-  <link rel="stylesheet" href="assets/css/style20251106.css">    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
-  <style>    
-
-    /* Timeline-based calendar view */    <script src="assets/js/script.v3.js" defer></script>
-
-    .classes-toolbar { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; margin-bottom: 1rem; }</head>
-
-    .classes-toolbar select, .classes-toolbar input[type=month] { padding:.45rem .5rem; border:1px solid #ccc; border-radius:4px; }<body>
-
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classes  FrontlineCPR911</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/tab_icon.ico">
+  <link rel="stylesheet" href="assets/css/style20251106.css">
+  <style>
+    .classes-toolbar { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; margin-bottom: 1rem; }
+    .classes-toolbar select, .classes-toolbar input[type=month] { padding:.45rem .5rem; border:1px solid #ccc; border-radius:4px; }
     .btn-small { padding:.45rem .65rem; font-size:.92rem; }
-
-        <header>
-
-    /* Timeline container */        <div class="container header-content">
-
-    .timeline-container { position:relative; }            <div class="logo">
-
-    .date-group { margin-bottom: 2rem; }                <a href="index.html"><h1>Frontline<span class="cpr">CPR</span>911</h1></a>
-
-    .date-header {             </div>
-
-      display:flex;             <nav class="main-nav">
-
-      align-items:center;                 <button class="menu-toggle" aria-expanded="false">☰</button>
-
-      gap:.75rem;                 <ul>
-
-      margin-bottom:.75rem;                    <li><a href="index.html">Home</a></li>
-
-      padding-bottom:.5rem;                    <li><a href="classes.html" class="active">Group Training</a></li>
-
-      border-bottom: 2px solid var(--color-primary);                    <li><a href="about.html">About Us</a></li>
-
-    }                    <li><a href="contact.html">Contact</a></li>
-
-    .date-header .date-day {                 </ul>
-
-      font-size: 2.5rem;             </nav>
-
-      font-weight:700;         </div>
-
-      line-height:1;         <div class="header-ekg-container">
-
-      color: var(--color-primary);            <!-- EKG decorative SVG overlay (persistent with blue color) -->
-
-      min-width: 3rem;            <svg class="ekg-svg" viewBox="0 0 1000 56" preserveAspectRatio="none" aria-hidden="true">
-
-      text-align: center;                <path class="ekg-path" d="M20 28 H120 L140 28 L150 8 L170 48 L190 28 H380 L420 28 L440 28 L460 12 L480 44 L500 28 H980" />
-
-    }            </svg>
-
-    .date-header .date-info { flex:1; }        </div>
-
-    .date-header .date-weekday {     </header>
-
-      font-size:1.1rem; 
-
-      font-weight:700;     <section class="section class-schedule-section">
-
-      text-transform: uppercase;        <div class="container">
-
-      letter-spacing: 0.5px;            <h1>Private & On‑Site Group Training</h1>
-
-    }            <p class="intro-text">We come to your business, facility, or team—on your schedule. Request a group CPR/AED or First Aid training session below. An instructor will confirm availability and pricing based on your group size and location.</p>
-
-    .date-header .date-month-year {         </div>
-
-      font-size:.9rem;     </section>
-
-      opacity:.8; 
-
-    }    <hr>
-
-    
-
-    /* Session items in timeline */    <section class="section registration-section" id="registration-form" style="background-color: var(--color-light-gray);">
-
-    .timeline-sessions { display:grid; gap:.75rem; }        <div class="container">
-
-    @media (min-width:640px){ .timeline-sessions { grid-template-columns: repeat(2, 1fr); } }            <h2>Request a Group Class Quote</h2>
-
-    @media (min-width:980px){ .timeline-sessions { grid-template-columns: repeat(3, 1fr); } }            <p>Tell us about your organization and training needs. No set dates required—we’ll work with you to schedule a convenient session.</p>
-
-    
-
-    .timeline-session-card {             <div id="group-form-banner" class="alert hidden" role="status" aria-live="polite"></div>
-
-      background:#fff; 
-
-      border:1px solid var(--color-light-gray);             <form id="group-request-form" class="registration-form">
-
-      border-radius:8px;                 <input type="hidden" name="requestType" value="group">
-
-      padding:1rem; 
-
-      box-shadow:0 2px 10px rgba(0,0,0,0.05);                <div class="form-group">
-
-      transition: transform 0.2s, box-shadow 0.2s;                    <label for="org_name">Organization / Company</label>
-
-    }                    <input type="text" id="org_name" name="org_name" placeholder="Acme Medical Group" required>
-
-    .timeline-session-card:hover {                </div>
-
-      transform: translateY(-2px);
-
-      box-shadow:0 4px 15px rgba(0,0,0,0.1);                <div class="form-group">
-
-    }                    <label for="contact_name">Primary Contact Name</label>
-
-    .session-time {                     <input type="text" id="contact_name" name="contact_name" placeholder="Jane Doe" required>
-
-      font-size:1.1rem;                 </div>
-
-      font-weight:700; 
-
-      color: var(--color-primary);                <div class="form-group">
-
-      margin-bottom:.25rem;                    <label for="email">Email Address</label>
-
-    }                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
-
-    .session-course {                 </div>
-
-      font-size:1.05rem; 
-
-      font-weight:700;                 <div class="form-group">
-
-      margin-bottom:.35rem;                    <label for="phone">Phone Number (Optional)</label>
-
-    }                    <input type="tel" id="phone" name="phone" placeholder="(555) 555-5555">
-
-    .session-location {                 </div>
-
-      font-size:.9rem; 
-
-      opacity:.8;                 <div class="form-group">
-
-      margin-bottom:.5rem;                    <label for="course_type">Course Type</label>
-
-    }                    <select id="course_type" name="course_type" required>
-
-    .session-footer {                         <option value="">Select a course…</option>
-
-      display:flex;                         <option value="BLS Provider">BLS Provider</option>
-
-      align-items:center;                         <option value="Heartsaver CPR/AED">Heartsaver CPR/AED</option>
-
-      justify-content:space-between;                         <option value="First Aid + CPR">First Aid + CPR</option>
-
-      gap:.5rem;                    </select>
-
-      margin-top:.75rem;                </div>
-
-      padding-top:.75rem;
-
-      border-top:1px solid var(--color-light-gray);                <div class="form-group">
-
-    }                    <label for="participants">Estimated Number of Participants</label>
-
-    .capacity-badge {                     <input type="number" id="participants" name="participants" min="1" max="1000" required>
-
-      font-size:.85rem;                 </div>
-
-      padding:.2rem .5rem; 
-
-      border-radius:4px;                 <div class="form-group">
-
-      background:#eef2ff;                     <label for="location_pref">Training Location</label>
-
-      color:#222;                     <select id="location_pref" name="location_pref" required>
-
-      white-space: nowrap;                        <option value="">Select a location option…</option>
-
-    }                        <option value="On-site at our facility">On-site at our facility</option>
-
-    .capacity-badge.full { background:#ffe8e8; color:#8a1c1c; }                        <option value="At your location">At your location</option>
-
-    .capacity-badge.few-left { background:#fff4e6; color:#92400e; }                    </select>
-
-                    </div>
-
-    /* Quick course filter tabs */
-
-    .course-tabs {                 <div id="address_field_group" class="form-group hidden">
-
-      display:flex;                     <label for="address">If at your location, address/city</label>
-
-      gap:.5rem;                     <input type="text" id="address" name="address" placeholder="123 Example St, City, ZIP">
-
-      flex-wrap:wrap;                 </div>
-
-      margin-bottom:1rem;
-
-    }                <div class="form-group">
-
-    .course-tab {                     <label for="preferred_dates">Preferred Date(s) or Window</label>
-
-      padding:.5rem 1rem;                     <input type="text" id="preferred_dates" name="preferred_dates" placeholder="e.g., Any weekday in December, or 12/5–12/12">
-
-      border:1px solid #ccc;                 </div>
-
-      border-radius:20px; 
-
-      background:#fff;                <div class="form-group">
-
-      cursor:pointer;                    <label for="notes">Additional Notes (optional)</label>
-
-      transition: all 0.2s;                    <input type="text" id="notes" name="notes" placeholder="Shift schedules, special requirements, etc.">
-
-      font-size:.9rem;                </div>
-
-    }
-
-    .course-tab:hover { background:#f5f5f5; }                <button type="submit" class="btn btn-primary submit-btn">Request Quote</button>
-
-    .course-tab.active {             </form>
-
-      background: var(--color-primary); 
-
-      color:#fff;         </div>
-
-      border-color: var(--color-primary);    </section>
-
-    }
-
-        <footer>
-
-    .skeleton {         <div class="container">
-
-      position:relative;             <p>&copy; 2025 FrontlineCPR911 Training. All rights reserved. | <a href="admin/dashboard.html">Admin Login</a></p>
-
-      overflow:hidden;             <p>Training proudly based on Current AHA Guidelines.</p>
-
-      background:#f5f5f5;         </div>
-
-      min-height:110px;     </footer>
-
-      border-radius:8px; 
-
-    }    <script>
-
-    .skeleton::after {         // No inline script needed; submission handled in assets/js/script20251106.js
-
-      content:'';     </script>
-
-      position:absolute; 
-
-      inset:0; </body>
-
-      background:linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); </html>
-
-      transform:translateX(-100%); <!-- Deployed marker: classes.html updated 2025-11-06 -->
-      animation: shimmer 1.6s infinite; 
-    }
+    .timeline-container { position:relative; }
+    .date-group { margin-bottom: 2rem; }
+    .date-header { display:flex; align-items:center; gap:.75rem; margin-bottom:.75rem; padding-bottom:.5rem; border-bottom: 2px solid var(--color-primary); }
+    .date-header .date-day { font-size: 2.5rem; font-weight:700; line-height:1; color: var(--color-primary); min-width: 3rem; text-align: center; }
+    .date-header .date-info { flex:1; }
+    .date-header .date-weekday { font-size:1.1rem; font-weight:700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .date-header .date-month-year { font-size:.9rem; opacity:.8; }
+    .timeline-sessions { display:grid; gap:.75rem; }
+    @media (min-width:640px){ .timeline-sessions { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width:980px){ .timeline-sessions { grid-template-columns: repeat(3, 1fr); } }
+    .timeline-session-card { background:#fff; border:1px solid var(--color-light-gray); border-radius:8px; padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; }
+    .timeline-session-card:hover { transform: translateY(-2px); box-shadow:0 4px 15px rgba(0,0,0,0.1); }
+    .session-time { font-size:1.1rem; font-weight:700; color: var(--color-primary); margin-bottom:.25rem; }
+    .session-course { font-size:1.05rem; font-weight:700; margin-bottom:.35rem; }
+    .session-location { font-size:.9rem; opacity:.8; margin-bottom:.5rem; }
+    .session-footer { display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-top:.75rem; padding-top:.75rem; border-top:1px solid var(--color-light-gray); }
+    .capacity-badge { font-size:.85rem; padding:.2rem .5rem; border-radius:4px; background:#eef2ff; color:#222; white-space: nowrap; }
+    .capacity-badge.full { background:#ffe8e8; color:#8a1c1c; }
+    .capacity-badge.few-left { background:#fff4e6; color:#92400e; }
+    .course-tabs { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1rem; }
+    .course-tab { padding:.5rem 1rem; border:1px solid #ccc; border-radius:20px; background:#fff; cursor:pointer; transition: all 0.2s; font-size:.9rem; }
+    .course-tab:hover { background:#f5f5f5; }
+    .course-tab.active { background: var(--color-primary); color:#fff; border-color: var(--color-primary); }
+    .skeleton { position:relative; overflow:hidden; background:#f5f5f5; min-height:110px; border-radius:8px; }
+    .skeleton::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); transform:translateX(-100%); animation: shimmer 1.6s infinite; }
     @keyframes shimmer { 100% { transform:translateX(100%);} }
-    
-    .no-sessions-msg {
-      text-align:center;
-      padding:3rem 1rem;
-      background:#fff;
-      border-radius:8px;
-      border:1px solid var(--color-light-gray);
-    }
-    
-    /* Modal */
-    .modal { 
-      position:fixed; 
-      inset:0; 
-      display:none; 
-      align-items:center; 
-      justify-content:center; 
-      background:rgba(0,0,0,.45); 
-      z-index:1000; 
-    }
+    .no-sessions-msg { text-align:center; padding:3rem 1rem; background:#fff; border-radius:8px; border:1px solid var(--color-light-gray); }
+    .modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:1000; }
     .modal.open { display:flex; }
-    .modal-content { 
-      width:min(640px, 92%); 
-      background:#fff; 
-      border-radius:8px; 
-      padding:1rem 1rem 1.25rem; 
-      box-shadow:0 10px 30px rgba(0,0,0,.2); 
-    }
-    .modal-actions { 
-      display:flex; 
-      gap:.5rem; 
-      flex-wrap:wrap; 
-      margin-top:.75rem; 
-    }
+    .modal-content { width:min(640px, 92%); background:#fff; border-radius:8px; padding:1rem 1rem 1.25rem; box-shadow:0 10px 30px rgba(0,0,0,.2); }
+    .modal-actions { display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.75rem; }
     .modal .field { margin:.5rem 0; }
-    .modal label { 
-      font-weight:700; 
-      font-size:.9rem; 
-      display:block; 
-      margin-bottom:.25rem; 
-    }
-    .modal input { 
-      width:100%; 
-      padding:.55rem .65rem; 
-      border:1px solid #ccc; 
-      border-radius:4px; 
-    }
-    .alert { 
-      padding:.55rem .7rem; 
-      border:1px solid #ddd; 
-      border-radius:4px; 
-      font-size:.9rem; 
-    }
+    .modal label { font-weight:700; font-size:.9rem; display:block; margin-bottom:.25rem; }
+    .modal input { width:100%; padding:.55rem .65rem; border:1px solid #ccc; border-radius:4px; }
+    .alert { padding:.55rem .7rem; border:1px solid #ddd; border-radius:4px; font-size:.9rem; }
     .alert.success { background:#ecfdf5; border-color:#86efac; }
   </style>
 </head>
@@ -336,7 +58,7 @@
         <a href="index.html"><h1>Frontline<span class="cpr">CPR</span>911</h1></a>
       </div>
       <nav class="main-nav">
-        <button class="menu-toggle" aria-expanded="false">☰</button>
+        <button class="menu-toggle" aria-expanded="false"></button>
         <ul>
           <li><a href="index.html">Home</a></li>
           <li><a href="classes.html" class="active">Classes</a></li>
@@ -351,34 +73,26 @@
       </svg>
     </div>
   </header>
-
   <section class="section hero-classes">
     <div class="container">
       <h1>Upcoming Classes by Date</h1>
       <p>Browse our schedule chronologically and find the perfect time for your certification.</p>
     </div>
   </section>
-
   <section class="section timeline-section" style="background-color: var(--color-light-gray);">
     <div class="container">
       <h2>Class Schedule</h2>
-      
-      <!-- Quick Course Filter Tabs -->
       <div class="course-tabs" id="course-tabs">
         <button class="course-tab active" data-course="">All Courses</button>
         <button class="course-tab" data-course="BLS Provider">BLS Provider</button>
         <button class="course-tab" data-course="Heartsaver CPR/AED">Heartsaver CPR/AED</button>
         <button class="course-tab" data-course="First Aid + CPR">First Aid + CPR</button>
       </div>
-
-      <!-- Date Range Filter -->
       <div class="classes-toolbar">
         <label for="filter-month" style="font-size:.9rem; font-weight:700;">Filter by Month:</label>
-        <input type="month" id="filter-month" />
+        <input type="month" id="filter-month">
         <button class="btn btn-secondary btn-small" id="filter-reset" type="button">Reset Filters</button>
       </div>
-
-      <!-- Timeline Container -->
       <div id="timeline-container" class="timeline-container" aria-live="polite">
         <div class="skeleton"></div>
         <div class="skeleton"></div>
@@ -386,23 +100,19 @@
       </div>
     </div>
   </section>
-
   <section class="section group-cta">
     <div class="container">
-      <h2>Need On‑Site Training for Your Team?</h2>
-      <p>We offer private, on‑site AHA-compliant training tailored to your schedule.</p>
+      <h2>Need OnSite Training for Your Team?</h2>
+      <p>We offer private, onsite AHA-compliant training tailored to your schedule.</p>
       <a href="contact.html" class="btn btn-primary">Request Group Quote</a>
     </div>
   </section>
-
   <footer>
     <div class="container">
       <p>&copy; 2025 FrontlineCPR911 Training. All rights reserved. | <a href="admin/dashboard.html">Admin Login</a></p>
       <p>Training proudly based on Current AHA Guidelines.</p>
     </div>
   </footer>
-
-  <!-- Signup Modal -->
   <div id="signup-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="signupTitle">
     <div class="modal-content">
       <h2 id="signupTitle">Register for Class</h2>
@@ -418,12 +128,9 @@
           <button type="button" class="btn btn-secondary" id="signup-cancel">Cancel</button>
         </div>
       </form>
-      <div id="signup-success" class="alert success" style="display:none; margin-top:.5rem;">
-        ✓ You're registered! A confirmation email will be sent shortly.
-      </div>
+      <div id="signup-success" class="alert success" style="display:none; margin-top:.5rem;">You're registered! A confirmation email will be sent shortly.</div>
     </div>
   </div>
-
-  <script src="assets/js/classes.js?v=2"></script>
+  <script src="assets/js/classes.js?v=3"></script>
 </body>
 </html>
