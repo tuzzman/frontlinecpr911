@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const exportBtn = document.getElementById('export-gr');
 
         let grAbortController = null;
-        async function loadClasses() {
+        async function loadGroupRequests() {
             const params = new URLSearchParams();
             if (statusFilter && statusFilter.value) params.set('status', statusFilter.value);
             if (fromInput && fromInput.value) params.set('from', fromInput.value);
