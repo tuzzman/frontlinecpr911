@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Group Training Request • FrontlineCPR911</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/tab_icon.ico">
+  <link rel="stylesheet" href="assets/css/style20251106.css">
+  <style>
+    .form-section { background-color: #fff; padding:2rem; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.05); max-width:700px; margin:0 auto; }
+    .form-field { margin-bottom:1.25rem; }
+    .form-field label { display:block; font-weight:700; margin-bottom:.4rem; font-size:.95rem; }
+    .form-field input, .form-field select, .form-field textarea { width:100%; padding:.65rem; border:1px solid #ccc; border-radius:4px; font-size:.95rem; font-family:inherit; }
+    .form-field textarea { min-height:100px; resize:vertical; }
+    .form-field small { display:block; margin-top:.25rem; font-size:.85rem; opacity:.7; }
+    .form-row { display:grid; gap:1rem; grid-template-columns:1fr 1fr; }
+    @media (max-width:640px){ .form-row { grid-template-columns:1fr; } }
+    .alert { padding:.75rem 1rem; border-radius:4px; margin-bottom:1rem; border:1px solid; }
+    .alert.success { background:#ecfdf5; border-color:#86efac; color:#065f46; }
+    .alert.error { background:#fef2f2; border-color:#fca5a5; color:#991b1b; }
+    .submit-btn { margin-top:1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-content">
+      <div class="logo">
+        <a href="index.html"><h1>Frontline<span class="cpr">CPR</span>911</h1></a>
+      </div>
+      <nav class="main-nav">
+        <button class="menu-toggle" aria-expanded="false">☰</button>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="classes.html">Classes</a></li>
+          <li><a href="group-training.html" class="active">Group Training</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="header-ekg-container">
+      <svg class="ekg-svg" viewBox="0 0 1000 56" preserveAspectRatio="none" aria-hidden="true">
+        <path class="ekg-path" d="M20 28 H120 L140 28 L150 8 L170 48 L190 28 H380 L420 28 L440 28 L460 12 L480 44 L500 28 H980" />
+      </svg>
+    </div>
+  </header>
+
+  <section class="section hero-classes">
+    <div class="container">
+      <h1>Request Group Training</h1>
+      <p>Looking to train 5 or more people? We offer customized on-site or facility training tailored to your organization's needs.</p>
+    </div>
+  </section>
+
+  <section class="section" style="background-color: var(--color-light-gray);">
+    <div class="container">
+      <div class="form-section">
+        <h2 style="margin-top:0;">Group Training Request Form</h2>
+        <p style="margin-bottom:1.5rem;">Fill out the form below and we'll contact you within 24 hours to discuss your training needs and provide a custom quote.</p>
+        
+        <div id="alert-container"></div>
+
+        <form id="group-request-form">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="org-name">Organization Name *</label>
+              <input type="text" id="org-name" name="org_name" required>
+            </div>
+            <div class="form-field">
+              <label for="contact-name">Contact Person *</label>
+              <input type="text" id="contact-name" name="contact_name" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="email">Email Address *</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-field">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="course-type">Course Type *</label>
+              <select id="course-type" name="course_type" required>
+                <option value="">Select a course...</option>
+                <option value="BLS Provider">BLS Provider</option>
+                <option value="Heartsaver CPR/AED">Heartsaver CPR/AED</option>
+                <option value="First Aid + CPR">First Aid + CPR</option>
+                <option value="Other">Other / Not Sure</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="participants">Number of Participants *</label>
+              <input type="number" id="participants" name="participants" min="5" required>
+              <small>Minimum 5 participants for group training</small>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="location-pref">Location Preference *</label>
+            <select id="location-pref" name="location_pref" required>
+              <option value="">Select...</option>
+              <option value="on-site">On-Site at Our Location</option>
+              <option value="your-facility">At Your Facility</option>
+              <option value="flexible">Flexible</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="address">Your Facility Address (if training at your location)</label>
+            <input type="text" id="address" name="address" placeholder="Street, City, State, ZIP">
+          </div>
+
+          <div class="form-field">
+            <label for="preferred-dates">Preferred Dates/Times</label>
+            <textarea id="preferred-dates" name="preferred_dates" placeholder="Let us know your preferred dates, times, or time frames..."></textarea>
+          </div>
+
+          <div class="form-field">
+            <label for="notes">Additional Notes</label>
+            <textarea id="notes" name="notes" placeholder="Any special requirements, questions, or additional information..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary submit-btn">Submit Request</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2>Why Choose Group Training?</h2>
+      <div class="features-grid" style="margin-top:1.5rem;">
+        <div class="feature-card">
+          <h4>💰 Cost Savings</h4>
+          <p>Group rates offer significant savings compared to individual enrollment.</p>
+        </div>
+        <div class="feature-card">
+          <h4>📅 Flexible Scheduling</h4>
+          <p>We work around your team's schedule for minimal disruption.</p>
+        </div>
+        <div class="feature-card">
+          <h4>🏢 On-Site Available</h4>
+          <p>We can bring the training to your workplace for convenience.</p>
+        </div>
+        <div class="feature-card">
+          <h4>🎯 Customized Content</h4>
+          <p>Training tailored to your industry and specific scenarios.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 FrontlineCPR911 Training. All rights reserved. | <a href="admin/dashboard.html">Admin Login</a></p>
+      <p>Training proudly based on Current AHA Guidelines.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/script20251106.js"></script>
+  <script>
+    const form = document.getElementById('group-request-form');
+    const alertContainer = document.getElementById('alert-container');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = form.querySelector('button[type=submit]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Submitting...';
+      submitBtn.disabled = true;
+      alertContainer.innerHTML = '';
+
+      const formData = {
+        org_name: document.getElementById('org-name').value.trim(),
+        contact_name: document.getElementById('contact-name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        course_type: document.getElementById('course-type').value,
+        participants: parseInt(document.getElementById('participants').value),
+        location_pref: document.getElementById('location-pref').value,
+        address: document.getElementById('address').value.trim(),
+        preferred_dates: document.getElementById('preferred-dates').value.trim(),
+        notes: document.getElementById('notes').value.trim()
+      };
+
+      try {
+        const response = await fetch('/api/group_request.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alertContainer.innerHTML = '<div class="alert success">✓ Your request has been submitted! We\'ll contact you within 24 hours.</div>';
+          form.reset();
+          window.scrollTo({ top: alertContainer.offsetTop - 100, behavior: 'smooth' });
+        } else {
+          alertContainer.innerHTML = `<div class="alert error">Error: ${result.message || 'Please try again.'}</div>`;
+        }
+      } catch (error) {
+        alertContainer.innerHTML = '<div class="alert error">Network error. Please try again later.</div>';
+      } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
