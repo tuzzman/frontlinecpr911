@@ -43,8 +43,6 @@ if ($type === 'group_requests') {
     exit;
 }
 
-json_response(400, [ 'success' => false, 'message' => 'Unknown export type' ]);
- 
 // Roster export (CSV/PDF/HTML)
 if ($type === 'roster') {
     $classId = isset($_GET['classId']) ? (int)$_GET['classId'] : 0;
@@ -123,3 +121,5 @@ if ($type === 'roster') {
     echo $html;
     exit;
 }
+
+json_response(400, [ 'success' => false, 'message' => 'Unknown export type' ]);
