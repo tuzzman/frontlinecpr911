@@ -69,7 +69,23 @@ let activeSessionId = null;
 async function fetchSessions() {
   try {
     const response = await fetch(`${API_BASE}/classes.php?public=true`);
-    if (!response.ok) throw new Error('Failed to fetch classes');
+    
+    // Log response details for debugging
+    console.log('API Response status:', response.status);
+    console.log('API Response headers:', response.headers.get('content-type'));
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API Error Response:', errorText);
+      throw new Error('Failed to fetch classes');
+    }
+    
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const responseText = await response.text();
+      console.error('Non-JSON response received:', responseText.substring(0, 500));
+      throw new Error('Server returned invalid response format');
+    }
     
     const result = await response.json();
     if (result.success && Array.isArray(result.data)) {
