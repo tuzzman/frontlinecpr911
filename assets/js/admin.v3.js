@@ -41,7 +41,7 @@ document.addEventListener('click', async (e) => {
     try {
         await fetch(`${API_BASE_URL}/logout.php`, { method: 'POST' });
     } catch (_) {}
-    window.location.href = 'login.html';
+    window.location.href = '../index.html';
 });
 
 document.addEventListener('DOMContentLoaded', () => {
