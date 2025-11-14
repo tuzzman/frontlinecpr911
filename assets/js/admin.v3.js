@@ -217,6 +217,96 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             grTableBody.innerHTML='';
             grTableBody.appendChild(frag);
+            
+            // Also render mobile cards
+            renderMobileCards(rows, 'group-requests');
+        }
+        
+        function renderMobileCards(rows, type) {
+            // Find or create mobile card container
+            let mobileContainer = document.querySelector('.mobile-card-list');
+            if (!mobileContainer) {
+                const section = document.querySelector('.dashboard-table-section');
+                if (!section) return;
+                mobileContainer = document.createElement('div');
+                mobileContainer.className = 'mobile-card-list';
+                section.appendChild(mobileContainer);
+            }
+            
+            if (!rows.length) {
+                mobileContainer.innerHTML = '<p style="text-align:center;padding:2rem;color:#666;">No items found.</p>';
+                return;
+            }
+            
+            mobileContainer.innerHTML = '';
+            const frag = document.createDocumentFragment();
+            
+            if (type === 'group-requests') {
+                rows.forEach(r => {
+                    const card = document.createElement('div');
+                    card.className = 'mobile-card';
+                    card.setAttribute('data-gr-id', r.id);
+                    card.setAttribute('data-json', JSON.stringify(r).replace(/'/g,'&#39;'));
+                    card.innerHTML = `
+                        <div class="mobile-card-header">
+                            <h3 class="mobile-card-title">${r.org_name || 'N/A'}</h3>
+                            <span class="mobile-card-badge ${r.status || 'new'}">${r.status || 'new'}</span>
+                        </div>
+                        <div class="mobile-card-body">
+                            <div class="mobile-card-row">
+                                <span class="mobile-card-label">Date:</span>
+                                <span class="mobile-card-value">${r.created_at?.slice(0,10) || ''}</span>
+                            </div>
+                            <div class="mobile-card-row">
+                                <span class="mobile-card-label">Contact:</span>
+                                <span class="mobile-card-value">${r.contact_name || ''}</span>
+                            </div>
+                            <div class="mobile-card-row">
+                                <span class="mobile-card-label">Email:</span>
+                                <span class="mobile-card-value">${r.email || ''}</span>
+                            </div>
+                            <div class="mobile-card-row">
+                                <span class="mobile-card-label">Phone:</span>
+                                <span class="mobile-card-value">${r.phone || ''}</span>
+                            </div>
+                            <div class="mobile-card-row">
+                                <span class="mobile-card-label">Course:</span>
+                                <span class="mobile-card-value">${r.course_type || ''}</span>
+                            </div>
+                            <div class="mobile-card-row">
+                                <span class="mobile-card-label">Participants:</span>
+                                <span class="mobile-card-value">${r.participants || ''}</span>
+                            </div>
+                            <div class="mobile-card-row">
+                                <span class="mobile-card-label">Status:</span>
+                                <span class="mobile-card-value">
+                                    <select class="gr-status-select" aria-label="Status" style="width:100%;padding:0.4rem;">
+                                        <option value="new" ${r.status==='new'?'selected':''}>New</option>
+                                        <option value="contacted" ${r.status==='contacted'?'selected':''}>Contacted</option>
+                                        <option value="scheduled" ${r.status==='scheduled'?'selected':''}>Scheduled</option>
+                                        <option value="closed" ${r.status==='closed'?'selected':''}>Closed</option>
+                                    </select>
+                                </span>
+                            </div>
+                            <div class="mobile-card-row">
+                                <span class="mobile-card-label">Notes:</span>
+                                <span class="mobile-card-value">
+                                    <div class="notes-wrapper" style="width:100%;">
+                                        <span class="notes-text">${(r.notes||'').replace(/</g,'&lt;') || '<em>No notes</em>'}</span>
+                                        <button type="button" class="btn-action edit gr-edit-notes" style="margin-top:0.5rem;width:100%;">Edit Notes</button>
+                                    </div>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mobile-card-actions">
+                            <button type="button" class="btn-action view gr-save-row">Save Changes</button>
+                        </div>
+                    `;
+                    frag.appendChild(card);
+                });
+            }
+            
+            mobileContainer.appendChild(frag);
         }
 
         grTableBody.addEventListener('click', (e) => {
@@ -260,8 +350,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveGroupRequest(id, statusSel.value, notesVal, tr, saveRow);
             }
         });
+        
+        // Mobile card event delegation
+        document.addEventListener('click', (e) => {
+            const mobileCard = e.target.closest('.mobile-card');
+            if (!mobileCard) return;
+            
+            const editBtn = e.target.closest('.gr-edit-notes');
+            if(editBtn){
+                const notesWrapper = mobileCard.querySelector('.notes-wrapper');
+                if(notesWrapper.querySelector('textarea')) return; // already editing
+                const current = mobileCard.querySelector('.notes-text')?.innerHTML.replace(/<em>No notes<\/em>/,'') || '';
+                notesWrapper.innerHTML = `<textarea class="gr-notes-textarea" rows="3" style="width:100%;">${current.replace(/&lt;/g,'<')}</textarea>
+                <div style="margin-top:.4rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+                    <button type="button" class="btn-action view gr-notes-save">Save Notes</button>
+                    <button type="button" class="btn-action edit gr-notes-cancel">Cancel</button>
+                </div>`;
+            }
+            const saveNotes = e.target.closest('.gr-notes-save');
+            if(saveNotes){
+                const ta = mobileCard.querySelector('.gr-notes-textarea');
+                const val = ta.value.trim();
+                const spanHtml = val ? val.replace(/</g,'&lt;') : '<em>No notes</em>';
+                const notesWrapper = mobileCard.querySelector('.notes-wrapper');
+                notesWrapper.innerHTML = `<span class="notes-text">${spanHtml}</span><button type="button" class="btn-action edit gr-edit-notes" style="margin-top:0.5rem;width:100%;">Edit Notes</button>`;
+            }
+            const cancelNotes = e.target.closest('.gr-notes-cancel');
+            if(cancelNotes){
+                const raw = mobileCard.getAttribute('data-json');
+                try {
+                    const data = JSON.parse(raw.replace(/&#39;/g,'"'));
+                    const spanHtml = data.notes ? data.notes.replace(/</g,'&lt;') : '<em>No notes</em>';
+                    const notesWrapper = mobileCard.querySelector('.notes-wrapper');
+                    notesWrapper.innerHTML = `<span class="notes-text">${spanHtml}</span><button type="button" class="btn-action edit gr-edit-notes" style="margin-top:0.5rem;width:100%;">Edit Notes</button>`;
+                } catch(_){}
+            }
+            const saveRow = e.target.closest('.gr-save-row');
+            if(saveRow){
+                const id = mobileCard.getAttribute('data-gr-id');
+                const statusSel = mobileCard.querySelector('.gr-status-select');
+                const notesSpan = mobileCard.querySelector('.notes-text');
+                const notesVal = notesSpan ? notesSpan.textContent.replace(/<em>No notes<\/em>/,'').trim() : '';
+                saveGroupRequest(id, statusSel.value, notesVal, mobileCard, saveRow);
+            }
+        });
 
-        async function saveGroupRequest(id, status, notes, tr, btn){
+        async function saveGroupRequest(id, status, notes, element, btn){
             if(!id) return;
             const original = btn.textContent; btn.disabled=true; btn.textContent='Saving...'; btn.classList.add('btn-loading');
             try {
@@ -277,12 +411,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const json = await res.json().catch(()=>({success:false,message:'Bad JSON'}));
                 if(!res.ok || !json.success) throw new Error(json.message||'Update failed');
-                // update stored json
-                const raw = tr.getAttribute('data-json');
+                // update stored json in both table row and mobile card
+                const raw = element.getAttribute('data-json');
                 let data = {};
                 try { data = JSON.parse(raw.replace(/&#39;/g,'"')) || {}; } catch(_){}
                 data.status = status; data.notes = notes;
-                tr.setAttribute('data-json', JSON.stringify(data).replace(/'/g,'&#39;'));
+                element.setAttribute('data-json', JSON.stringify(data).replace(/'/g,'&#39;'));
+                
+                // Update the corresponding element (table or mobile card)
+                const elementsWithId = document.querySelectorAll(`[data-gr-id="${id}"]`);
+                elementsWithId.forEach(el => {
+                    el.setAttribute('data-json', JSON.stringify(data).replace(/'/g,'&#39;'));
+                    // Update mobile card badge if it's a mobile card
+                    const badge = el.querySelector('.mobile-card-badge');
+                    if (badge) {
+                        badge.className = `mobile-card-badge ${status}`;
+                        badge.textContent = status;
+                    }
+                });
+                
                 // Recalculate summary metrics from current DOM rows
                 recalcGroupRequestMetrics();
                 showBanner('Saved');

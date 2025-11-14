@@ -616,6 +616,187 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
 @media (min-width: 900px){ body.admin-ultra .form-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (min-width: 1200px){ body.admin-ultra .form-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 768px){ body.admin-ultra .main-content { padding: 0.6rem !important; } }
+
+/* =============================
+   MOBILE-FRIENDLY IMPROVEMENTS
+   ============================= */
+@media (max-width: 768px) {
+    /* Hide complex tables on mobile, show card layout instead */
+    .class-summary-table,
+    .client-data-table {
+        display: none;
+    }
+    
+    /* Mobile card containers */
+    .mobile-card-list {
+        display: block !important;
+        padding: 0;
+        margin: 0;
+    }
+    
+    /* Individual mobile cards */
+    .mobile-card {
+        background: var(--color-background);
+        border: 1px solid var(--color-light-gray);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    .mobile-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--color-light-gray);
+    }
+    
+    .mobile-card-title {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--color-secondary);
+        margin: 0;
+    }
+    
+    .mobile-card-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    
+    .mobile-card-badge.new { background: #CC0000; color: white; }
+    .mobile-card-badge.contacted { background: #FFA500; color: white; }
+    .mobile-card-badge.scheduled { background: #4CAF50; color: white; }
+    .mobile-card-badge.closed { background: #666; color: white; }
+    .mobile-card-badge.paid { background: #4CAF50; color: white; }
+    .mobile-card-badge.pending { background: #FFA500; color: white; }
+    
+    .mobile-card-body {
+        margin-bottom: 0.75rem;
+    }
+    
+    .mobile-card-row {
+        display: flex;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .mobile-card-row:last-child {
+        border-bottom: none;
+    }
+    
+    .mobile-card-label {
+        font-weight: 600;
+        color: #666;
+        min-width: 90px;
+        font-size: 0.85rem;
+    }
+    
+    .mobile-card-value {
+        color: var(--color-secondary);
+        flex: 1;
+        font-size: 0.9rem;
+    }
+    
+    .mobile-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--color-light-gray);
+    }
+    
+    .mobile-card-actions .btn-action {
+        flex: 1;
+        min-width: 80px;
+        text-align: center;
+        justify-content: center;
+    }
+    
+    /* Adjust summary cards for mobile */
+    .summary-cards {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .summary-cards .card {
+        min-width: 0;
+    }
+    
+    /* Filter controls in mobile */
+    details.admin-controls summary {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.95rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Modal adjustments */
+    .admin-modal {
+        padding: 2vh 0.5rem;
+    }
+    
+    .admin-modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    /* Header adjustments */
+    .admin-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .classes-header-bar {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .classes-header-bar h2 {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .classes-header-bar button {
+        width: 100%;
+    }
+    
+    /* Make action button groups stack better */
+    [style*="display:flex"][style*="gap"] {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    [style*="display:flex"][style*="gap"] .btn-action {
+        width: 100%;
+    }
+    
+    /* Pagination adjustments */
+    #clients-pagination {
+        justify-content: center;
+        text-align: center;
+    }
+    
+    #clients-pagination label {
+        width: 100%;
+        margin-top: 0.5rem !important;
+    }
+}
+
+/* Desktop: hide mobile cards */
+@media (min-width: 769px) {
+    .mobile-card-list {
+        display: none !important;
+    }
+}
+
 /*
  * APPEND TO: assets/css/admin.css
  * ------------------------------------------------ */
