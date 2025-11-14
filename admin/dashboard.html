@@ -19,6 +19,9 @@
     }
     /* Critical inline fallback for mobile topbar & nav to avoid cached plain text */
     @media (max-width:768px){
+      [data-requires-auth].authenticated {
+        display: block;
+      }
       html,body{width:100%;max-width:100%;overflow-x:hidden}
       body{display:block}
       .admin-wrapper{display:block;width:100%}
