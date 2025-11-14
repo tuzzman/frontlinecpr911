@@ -10,6 +10,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/admin.css?v=20251109a" />
   <style>
+    /* Security: Hide admin content until authenticated */
+    [data-requires-auth] {
+      display: none;
+    }
+    [data-requires-auth].authenticated {
+      display: block;
+    }
     @media (max-width:768px){
       html,body{width:100%;max-width:100%;overflow-x:hidden}
       body{display:block}

@@ -78,6 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch(`${API_BASE_URL}/auth.php`, { credentials: 'same-origin' });
             if (!res.ok) throw new Error('unauthorized');
+            // Authentication successful - reveal content
+            requiresAuth.classList.add('authenticated');
         } catch (_) {
             window.location.href = 'login.html';
         }
