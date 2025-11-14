@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                         <div class="mobile-card-actions">
-                            <button type="button" class="btn-action view gr-save-row">Save Changes</button>
+                            <button type="button" class="btn-action view gr-save-row" style="width:100%;">Save Changes</button>
                         </div>
                     `;
                     frag.appendChild(card);
