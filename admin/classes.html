@@ -16,9 +16,14 @@
     }
     [data-requires-auth].authenticated {
       display: flex !important;
+      min-height: 100vh;
     }
     @media (max-width:768px){
       [data-requires-auth].authenticated {
+        display: block !important;
+        min-height: auto;
+      }
+      .admin-topbar {
         display: block !important;
       }
       html,body{width:100%;max-width:100%;overflow-x:hidden}
