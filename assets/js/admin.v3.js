@@ -831,7 +831,70 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             attachClientEditButtons();
             renderRosterPagination();
+            
+            // Render mobile compact list
+            renderClientsMobileList(slice, start);
         }
+        
+        function renderClientsMobileList(clients, startIndex) {
+            let mobileContainer = document.querySelector('.dashboard-table-section .mobile-card-list');
+            if (!mobileContainer) {
+                const section = document.querySelector('.dashboard-table-section');
+                if (!section) return;
+                mobileContainer = document.createElement('div');
+                mobileContainer.className = 'mobile-card-list';
+                section.appendChild(mobileContainer);
+            }
+            
+            if (!clients.length) {
+                mobileContainer.innerHTML = '<p style="text-align:center;padding:2rem;color:#666;">No clients found.</p>';
+                return;
+            }
+            
+            mobileContainer.innerHTML = '';
+            const frag = document.createDocumentFragment();
+            
+            clients.forEach((r, i) => {
+                const item = document.createElement('div');
+                item.className = 'mobile-client-item';
+                item.setAttribute('data-client-id', r.client_id);
+                item.setAttribute('data-json', JSON.stringify(r).replace(/'/g,'&#39;'));
+                
+                // Compact single-line format: #N • Name • Status
+                const statusBadge = r.payment_status === 'paid' ? 
+                    '<span class="mobile-card-badge paid">Paid</span>' : 
+                    r.payment_status === 'pending' ?
+                    '<span class="mobile-card-badge pending">Pending</span>' :
+                    '<span class="mobile-card-badge" style="background:#999;color:white;">Unknown</span>';
+                
+                item.innerHTML = `
+                    <div class="mobile-client-row">
+                        <div class="mobile-client-info">
+                            <span class="mobile-client-number">#${startIndex + i + 1}</span>
+                            <span class="mobile-client-name">${r.full_name || 'No name'}</span>
+                            ${statusBadge}
+                        </div>
+                        <button class="btn-action edit js-edit-client mobile-client-edit-btn" type="button">Edit</button>
+                    </div>
+                `;
+                frag.appendChild(item);
+            });
+            
+            mobileContainer.appendChild(frag);
+            
+            // Attach event listeners to mobile edit buttons
+            mobileContainer.querySelectorAll('.js-edit-client').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const item = e.target.closest('.mobile-client-item');
+                    const raw = item.getAttribute('data-json');
+                    try {
+                        const data = JSON.parse(raw.replace(/&#39;/g, '"'));
+                        openEditModal(data);
+                    } catch(_) {}
+                });
+            });
+        }
+        
         function renderRosterPagination(){
             const pages = totalPages();
             const info = document.getElementById('clients-page-info');
