@@ -11,7 +11,7 @@ if ($method === 'GET') {
         // Public listing or single-class fetch
         if ($idParam) {
             // Single class fetch
-            $stmt = $pdo->prepare('SELECT id, course_type, start_datetime, location, price, max_capacity FROM classes WHERE id = :id');
+            $stmt = $pdo->prepare('SELECT id, course_type, start_datetime, location, price, max_capacity, notes FROM classes WHERE id = :id');
             $stmt->execute([':id'=>$idParam]);
             $row = $stmt->fetch();
             if (!$row) json_response(404, ['success'=>false,'message'=>'Class not found']);
@@ -25,7 +25,7 @@ if ($method === 'GET') {
             json_response(200, ['success'=>true,'data'=>$row]);
         } else {
             // Public listing - all upcoming classes
-            $stmt = $pdo->query('SELECT id, course_type, start_datetime, location, price, max_capacity FROM classes ORDER BY start_datetime ASC');
+            $stmt = $pdo->query('SELECT id, course_type, start_datetime, location, price, max_capacity, notes FROM classes ORDER BY start_datetime ASC');
             $rows = $stmt->fetchAll();
             if ($rows) {
                 $ids = array_column($rows, 'id');

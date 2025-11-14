@@ -170,6 +170,7 @@ function renderTimeline() {
           <div class="session-time">${formatTime(s.start_datetime)}</div>
           <div class="session-course">${s.course_type}</div>
           <div class="session-location">📍 ${s.location || 'TBD'}</div>
+          ${s.notes ? `<div class="session-notes" style="font-size:.9rem; margin-top:.5rem; color:#555; font-style:italic;">${s.notes}</div>` : ''}
           <div class="session-footer">
             <div class="capacity-badge ${full ? 'full' : fewLeft ? 'few-left' : ''}">
               ${full ? 'Class Full' : left !== null ? `${left} spot${left === 1 ? '' : 's'} left` : 'Register'}
