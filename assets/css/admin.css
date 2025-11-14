@@ -891,7 +891,8 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
 
 /* Desktop: hide mobile cards */
 @media (min-width: 769px) {
-    .mobile-card-list {
+    .mobile-card-list,
+    .mobile-client-item {
         display: none !important;
     }
 }
