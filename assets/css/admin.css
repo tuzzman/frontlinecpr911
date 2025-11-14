@@ -788,6 +788,30 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
         width: 100%;
         margin-top: 0.5rem !important;
     }
+    
+    /* Clients filter form - special two-row layout */
+    #clients-filter-form .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        grid-template-areas:
+            "course"
+            "month"
+            "class"
+            "search"
+            "button";
+    }
+    
+    #clients-filter-form .form-group:nth-child(1) { grid-area: course; }
+    #clients-filter-form .form-group:nth-child(2) { grid-area: month; }
+    #clients-filter-form .form-group:nth-child(3) { grid-area: class; }
+    #clients-filter-form .form-group:nth-child(4) { grid-area: search; }
+    
+    #clients-filter-form button[type="submit"] { 
+        grid-area: button;
+        width: 100%;
+        margin-top: 0;
+    }
 }
 
 /* Desktop: hide mobile cards */
