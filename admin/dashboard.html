@@ -18,7 +18,15 @@
       display: flex !important;
       min-height: 100vh;
     }
-    /* Critical inline fallback for mobile topbar & nav to avoid cached plain text */
+    
+    /* Desktop: hide mobile topbar */
+    @media (min-width: 769px) {
+      .admin-topbar {
+        display: none !important;
+      }
+    }
+    
+    /* Mobile: show topbar, hide sidebar, adjust layout */
     @media (max-width:768px){
       [data-requires-auth].authenticated {
         display: block !important;
@@ -26,13 +34,20 @@
       }
       .admin-topbar {
         display: block !important;
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #1A1A1A;
+        color: #fff;
+        font-family: Roboto, sans-serif;
+        z-index: 999;
       }
       html,body{width:100%;max-width:100%;overflow-x:hidden}
       body{display:block}
       .admin-wrapper{display:block;width:100%}
       .sidebar{display:none!important}
       .main-content{width:100%!important;padding:1.5rem!important;margin:0!important}
-      .admin-topbar{display:block;position:sticky;top:0;left:0;right:0;background:#1A1A1A;color:#fff;font-family:Roboto,sans-serif;z-index:999}
       .admin-topbar .topbar-inner{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;position:relative}
       .admin-topbar .brand{color:#CC0000;font-weight:700}
       .admin-mobile-nav{display:none}
