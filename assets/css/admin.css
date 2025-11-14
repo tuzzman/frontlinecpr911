@@ -624,7 +624,7 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
     /* Hide complex tables on mobile, show card layout instead */
     .class-summary-table,
     .client-data-table {
-        display: none;
+        display: none !important;
     }
     
     /* Mobile card containers */
