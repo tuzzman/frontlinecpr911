@@ -1181,11 +1181,101 @@ document.addEventListener('DOMContentLoaded', () => {
                     </tr>
                 `).join('');
                 attachEditButtons();
-                                attachQrButtons();
+                attachQrButtons();
+                
+                // Render mobile cards
+                renderClassesMobileCards(rows);
             } catch (e) {
                 console.error(e);
                 classesTbody.innerHTML = '<tr><td colspan="7">Error loading classes.</td></tr>';
             }
+        }
+        
+        function renderClassesMobileCards(rows) {
+            let mobileContainer = document.querySelector('.dashboard-table-section .mobile-card-list');
+            if (!mobileContainer) {
+                const section = document.querySelector('.dashboard-table-section');
+                if (!section) return;
+                mobileContainer = document.createElement('div');
+                mobileContainer.className = 'mobile-card-list';
+                section.appendChild(mobileContainer);
+            }
+            
+            if (!rows.length) {
+                mobileContainer.innerHTML = '<p style="text-align:center;padding:2rem;color:#666;">No classes found.</p>';
+                return;
+            }
+            
+            mobileContainer.innerHTML = '';
+            const frag = document.createDocumentFragment();
+            
+            rows.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'mobile-card';
+                card.setAttribute('data-class-id', c.id);
+                card.setAttribute('data-json', JSON.stringify(c).replace(/'/g,'&#39;'));
+                
+                const dt = c.start_datetime ? new Date(c.start_datetime.replace(' ', 'T')) : null;
+                const dateDisplay = dt ? dt.toLocaleString() : 'Not scheduled';
+                const registrations = c.registrations || 0;
+                const capacity = c.max_capacity || 'N/A';
+                
+                card.innerHTML = `
+                    <div class="mobile-card-header">
+                        <h3 class="mobile-card-title">${c.course_type || 'N/A'}</h3>
+                        <span class="mobile-card-badge" style="background:#666;color:white;">#${c.id}</span>
+                    </div>
+                    <div class="mobile-card-body">
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Date/Time:</span>
+                            <span class="mobile-card-value">${dateDisplay}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Location:</span>
+                            <span class="mobile-card-value">${c.location || 'N/A'}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Price:</span>
+                            <span class="mobile-card-value">$${c.price || '0'}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Capacity:</span>
+                            <span class="mobile-card-value">${registrations} / ${capacity}</span>
+                        </div>
+                        ${c.notes ? `<div class="mobile-card-row">
+                            <span class="mobile-card-label">Notes:</span>
+                            <span class="mobile-card-value">${c.notes}</span>
+                        </div>` : ''}
+                    </div>
+                    <div class="mobile-card-actions">
+                        <button class="btn-action edit js-edit-class" type="button">Edit Class</button>
+                        <button class="btn-action view js-qr-class" type="button">Show QR</button>
+                    </div>
+                `;
+                frag.appendChild(card);
+            });
+            
+            mobileContainer.appendChild(frag);
+            
+            // Attach event listeners to mobile card buttons
+            mobileContainer.querySelectorAll('.js-edit-class').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const card = e.target.closest('.mobile-card');
+                    const raw = card.getAttribute('data-json');
+                    try {
+                        const data = JSON.parse(raw.replace(/&#39;/g, '"'));
+                        openModal(data);
+                    } catch(_) {}
+                });
+            });
+            
+            mobileContainer.querySelectorAll('.js-qr-class').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const card = e.target.closest('.mobile-card');
+                    const classId = card.getAttribute('data-class-id');
+                    if (classId) showClassQR(classId);
+                });
+            });
         }
 
         classCreateForm?.addEventListener('submit', async (e) => {
