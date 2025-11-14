@@ -815,6 +815,31 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
         margin: 0 auto;
         padding: 0.5rem 1.5rem;
     }
+    
+    /* Group requests filter form - mobile layout */
+    #gr-filter-form .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        grid-template-areas:
+            "status"
+            "from"
+            "to"
+            "button";
+    }
+    
+    #gr-filter-form .form-group:nth-child(1) { grid-area: status; }
+    #gr-filter-form .form-group:nth-child(2) { grid-area: from; }
+    #gr-filter-form .form-group:nth-child(3) { grid-area: to; }
+    
+    #gr-filter-form button[type="submit"] { 
+        grid-area: button;
+        width: auto;
+        min-width: 120px;
+        max-width: 200px;
+        margin: 0 auto;
+        padding: 0.5rem 1.5rem;
+    }
 }
 
 /* Desktop: hide mobile cards */
