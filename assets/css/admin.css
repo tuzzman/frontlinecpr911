@@ -400,14 +400,16 @@ td[data-label="Actions"] { white-space: nowrap; }
         grid-template-columns: 1fr; /* Stack cards vertically */
     }
 
+    /* Old responsive table design - DISABLED in favor of mobile cards below */
     /* Convert table to stacked cards for mobile view */
+    /*
     .class-summary-table, .class-summary-table thead, .class-summary-table tbody, .class-summary-table th, .class-summary-table td, .class-summary-table tr {
         display: block;
     }
 
     .class-summary-table thead tr {
         position: absolute;
-        top: -9999px; /* Hide table headers */
+        top: -9999px;
         left: -9999px;
     }
 
@@ -435,6 +437,7 @@ td[data-label="Actions"] { white-space: nowrap; }
         font-weight: 700;
         text-align: left;
     }
+    */
 
     /* Safety: remove any grid/flex that might be set elsewhere */
     .admin-wrapper, .main-content { float: none; clear: both; }
