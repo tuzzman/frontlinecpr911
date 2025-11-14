@@ -12,15 +12,15 @@
   <style>
     /* Hide admin content until authenticated */
     [data-requires-auth] {
-      display: none;
+      display: none !important;
     }
     [data-requires-auth].authenticated {
-      display: flex;
+      display: flex !important;
     }
     /* Critical inline fallback for mobile topbar & nav to avoid cached plain text */
     @media (max-width:768px){
       [data-requires-auth].authenticated {
-        display: block;
+        display: block !important;
       }
       html,body{width:100%;max-width:100%;overflow-x:hidden}
       body{display:block}
