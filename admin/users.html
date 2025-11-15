@@ -34,6 +34,84 @@
       }
       .mobile-card-list {
         display: block !important;
+        padding: 0 1rem 1rem 1rem;
+        margin: 0;
+      }
+      
+      /* Mobile card styles */
+      .mobile-card {
+        background: #fff;
+        border: 1px solid #f4f4f4;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .mobile-card-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #f4f4f4;
+        gap: 0.5rem;
+      }
+      .mobile-card-title {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #1A1A1A;
+        margin: 0;
+        flex: 1;
+        min-width: 0;
+      }
+      .mobile-card-badge {
+        display: inline-block !important;
+        padding: 0.25rem 0.5rem;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        white-space: nowrap;
+        flex-shrink: 0;
+        color: white;
+      }
+      .mobile-card-body {
+        margin-bottom: 0.75rem;
+      }
+      .mobile-card-row {
+        display: flex;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: flex-start;
+      }
+      .mobile-card-row:last-child {
+        border-bottom: none;
+      }
+      .mobile-card-label {
+        font-weight: 600;
+        color: #666;
+        min-width: 100px;
+        max-width: 100px;
+        flex-shrink: 0;
+        font-size: 0.85rem;
+      }
+      .mobile-card-value {
+        color: #1A1A1A;
+        flex: 1;
+        font-size: 0.9rem;
+        word-wrap: break-word;
+      }
+      .mobile-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        padding-top: 0.5rem;
+        border-top: 1px solid #f4f4f4;
+        flex-wrap: wrap;
+      }
+      .mobile-card-actions .btn-action {
+        flex: 0 0 auto;
+        font-size: 0.85rem;
       }
       
       [data-requires-auth].authenticated {
