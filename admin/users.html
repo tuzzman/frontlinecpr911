@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Users • FrontlineCPR911</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" href="/tab_icon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/admin.css?v=1731616200" />
+  <style>
+    /* Security: Hide admin content until authenticated */
+    [data-requires-auth] {
+      display: none !important;
+    }
+    [data-requires-auth].authenticated {
+      display: flex !important;
+      min-height: 100vh;
+    }
+    
+    /* Desktop: hide mobile topbar */
+    @media (min-width: 769px) {
+      .admin-topbar {
+        display: none !important;
+      }
+    }
+    
+    /* Mobile: show topbar, hide sidebar, adjust layout */
+    @media (max-width: 768px) {
+      [data-requires-auth].authenticated {
+        display: block !important;
+      }
+      .admin-topbar {
+        display: block !important;
+        position: sticky;
+        top: 0;
+        z-index: 999;
+      }
+      .sidebar { display: none !important; }
+      .main-content { width: 100% !important; padding: 1rem !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Topbar -->
+  <div class="admin-topbar" data-requires-auth>
+    <div class="topbar-inner">
+      <div class="topbar-logo">FrontlineCPR911 Admin</div>
+      <button class="mobile-menu-toggle" id="mobile-menu-btn" aria-label="Toggle menu">☰</button>
+    </div>
+    <nav class="mobile-nav" id="mobile-nav">
+      <ul>
+        <li><a href="dashboard.html">Group Requests</a></li>
+        <li><a href="clients.html">Clients & Rosters</a></li>
+        <li><a href="classes.html">Classes</a></li>
+        <li><a href="users.html" class="active">Admin Users</a></li>
+        <li><a href="../index.html">Public Homepage</a></li>
+        <li><a href="#" class="logout-link">Logout</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="admin-wrapper" data-requires-auth>
+    <aside class="sidebar">
+      <div class="logo-admin">
+        <h2>FrontlineCPR911</h2>
+        <p>Admin</p>
+      </div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="dashboard.html">Group Requests</a></li>
+          <li><a href="clients.html">Clients & Rosters</a></li>
+          <li><a href="classes.html">Classes</a></li>
+          <li><a href="users.html" class="active">Admin Users</a></li>
+          <li><a href="../index.html">Public Homepage</a></li>
+          <li><a href="#" class="logout-link" id="logout">Logout</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="admin-header">
+        <div class="admin-session-title">Admin Dashboard</div>
+        <h1>Admin User Management</h1>
+      </header>
+
+      <section class="dashboard-table-section">
+        <div id="users-banner-region" aria-live="polite" style="min-height:0;"></div>
+        
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+          <h2 style="margin:0;">Admin Users</h2>
+          <button id="add-user-btn" class="btn-action edit">Add Admin User</button>
+        </div>
+
+        <table class="class-summary-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="5">Loading...</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <!-- Add/Edit User Modal -->
+  <div id="user-modal" class="admin-modal hidden">
+    <div class="admin-modal-content">
+      <h2 id="user-modal-title">Add Admin User</h2>
+      <form id="user-form">
+        <input type="hidden" id="user-id" />
+        
+        <div class="form-group">
+          <label for="user-email">Email *</label>
+          <input type="email" id="user-email" required />
+        </div>
+
+        <div class="form-group">
+          <label for="user-password">Password *</label>
+          <input type="password" id="user-password" required />
+          <small style="color:#666;">Minimum 8 characters</small>
+        </div>
+
+        <div class="form-group" id="confirm-password-group">
+          <label for="user-password-confirm">Confirm Password *</label>
+          <input type="password" id="user-password-confirm" required />
+        </div>
+
+        <div class="form-actions" style="display:flex; gap:0.5rem; margin-top:1.5rem;">
+          <button type="submit" class="btn-action view">Save User</button>
+          <button type="button" class="btn-action edit" id="cancel-user-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="password-modal" class="admin-modal hidden">
+    <div class="admin-modal-content">
+      <h2>Change Password</h2>
+      <form id="password-form">
+        <input type="hidden" id="password-user-id" />
+        <p id="password-user-email" style="margin-bottom:1rem; color:#666;"></p>
+
+        <div class="form-group">
+          <label for="new-password">New Password *</label>
+          <input type="password" id="new-password" required />
+          <small style="color:#666;">Minimum 8 characters</small>
+        </div>
+
+        <div class="form-group">
+          <label for="new-password-confirm">Confirm New Password *</label>
+          <input type="password" id="new-password-confirm" required />
+        </div>
+
+        <div class="form-actions" style="display:flex; gap:0.5rem; margin-top:1.5rem;">
+          <button type="submit" class="btn-action view">Change Password</button>
+          <button type="button" class="btn-action edit" id="cancel-password-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/assets/js/admin-users.js?v=1731616200"></script>
+</body>
+</html>
