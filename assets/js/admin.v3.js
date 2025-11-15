@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="mobile-card-row">
                                 <span class="mobile-card-label">Status:</span>
                                 <span class="mobile-card-value">
-                                    <select class="gr-status-select" aria-label="Status" style="width:100%;padding:0.4rem;">
+                                    <select class="gr-status-select" aria-label="Status" style="padding:0.4rem;">
                                         <option value="new" ${r.status==='new'?'selected':''}>New</option>
                                         <option value="contacted" ${r.status==='contacted'?'selected':''}>Contacted</option>
                                         <option value="scheduled" ${r.status==='scheduled'?'selected':''}>Scheduled</option>
@@ -291,9 +291,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="mobile-card-row">
                                 <span class="mobile-card-label">Notes:</span>
                                 <span class="mobile-card-value">
-                                    <div class="notes-wrapper" style="width:100%;">
+                                    <div class="notes-wrapper">
                                         <span class="notes-text">${(r.notes||'').replace(/</g,'&lt;') || '<em>No notes</em>'}</span>
-                                        <button type="button" class="btn-action edit gr-edit-notes" style="margin-top:0.5rem;width:100%;">Edit Notes</button>
+                                        <button type="button" class="btn-action edit gr-edit-notes" style="margin-top:0.5rem;">Edit Notes</button>
                                     </div>
                                 </span>
                             </div>
