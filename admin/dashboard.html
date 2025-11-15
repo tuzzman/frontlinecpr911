@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="icon" href="/tab_icon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/admin20251106.css?v=20251115b" />
+  <link rel="stylesheet" href="/assets/css/admin20251106.css?v=20251115c" />
   <style>
     /* Hide admin content until authenticated */
     [data-requires-auth] {
@@ -28,6 +28,19 @@
     
     /* Mobile: show topbar, hide sidebar, adjust layout */
     @media (max-width:768px){
+      /* CRITICAL: Hide desktop tables on mobile - show cards only */
+      .class-summary-table,
+      .class-summary-table thead,
+      .class-summary-table tbody,
+      .class-summary-table th,
+      .class-summary-table td,
+      .class-summary-table tr {
+        display: none !important;
+      }
+      .mobile-card-list {
+        display: block !important;
+      }
+      
       [data-requires-auth].authenticated {
         display: block !important;
         min-height: auto;
@@ -172,6 +185,6 @@
     </main>
   </div>
 
-  <script src="/assets/js/admin.v3.js?v=20251115"></script>
+  <script src="/assets/js/admin.v3.js?v=20251115c"></script>
 </body>
 </html>
