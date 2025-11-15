@@ -641,10 +641,10 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
     .mobile-card {
         background: var(--color-background);
         border: 1px solid var(--color-light-gray);
-        border-radius: var(--radius-sm);
+        border-radius: 8px; /* Increased from var(--radius-sm) for more distinct cards */
         padding: 1rem;
-        margin-bottom: 0.75rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        margin-bottom: 1rem; /* Increased spacing between cards */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Enhanced shadow for more depth */
     }
     
     .mobile-card-header {
@@ -686,8 +686,9 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
     
     .mobile-card-row {
         display: flex;
-        padding: 0.4rem 0;
+        padding: 0.5rem 0;
         border-bottom: 1px solid #f0f0f0;
+        align-items: flex-start; /* Align items to top for multi-line content */
     }
     
     .mobile-card-row:last-child {
@@ -697,7 +698,9 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
     .mobile-card-label {
         font-weight: 600;
         color: #666;
-        min-width: 90px;
+        min-width: 100px; /* Increased from 90px for better alignment */
+        max-width: 100px;
+        flex-shrink: 0; /* Prevent label from shrinking */
         font-size: 0.85rem;
     }
     
@@ -705,6 +708,7 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
         color: var(--color-secondary);
         flex: 1;
         font-size: 0.9rem;
+        word-wrap: break-word; /* Prevent long text from breaking layout */
     }
     
     .mobile-card-actions {
