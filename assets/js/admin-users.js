@@ -81,11 +81,14 @@
             if (!res.ok) throw new Error('Failed to load users');
             const data = await res.json();
             
+            console.log('Users API response:', data);
+            
             if (!data.success) {
                 throw new Error(data.message || 'Failed to load users');
             }
 
             currentUsers = data.users || [];
+            console.log('Current users:', currentUsers);
             renderUsers();
         } catch (err) {
             console.error('Load users error:', err);
@@ -122,14 +125,17 @@
 
     // Render mobile card layout
     function renderMobileCards() {
+        console.log('renderMobileCards called, users:', currentUsers.length);
         let mobileContainer = document.querySelector('.mobile-card-list');
         
         if (!mobileContainer) {
             const section = document.querySelector('.dashboard-table-section');
+            console.log('Section found:', !!section);
             if (!section) return;
             mobileContainer = document.createElement('div');
             mobileContainer.className = 'mobile-card-list';
             section.appendChild(mobileContainer);
+            console.log('Mobile container created and appended');
         }
 
         if (!currentUsers.length) {
@@ -169,6 +175,7 @@
         });
 
         mobileContainer.appendChild(frag);
+        console.log('Mobile cards rendered:', currentUsers.length, 'cards');
     }
 
     // Open add user modal
