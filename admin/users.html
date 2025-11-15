@@ -36,6 +36,62 @@
         position: sticky;
         top: 0;
         z-index: 999;
+        background: #1A1A1A;
+        color: #fff;
+      }
+      .admin-topbar .topbar-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        position: relative;
+      }
+      .topbar-logo {
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+      .mobile-menu-toggle {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+      }
+      .admin-mobile-nav {
+        display: none;
+      }
+      .admin-mobile-nav.open {
+        display: block;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 1rem;
+        width: 260px;
+        max-width: 85vw;
+        background: #1A1A1A;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border-radius: 8px;
+        overflow: hidden;
+        z-index: 1000;
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+      .admin-mobile-nav ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .admin-mobile-nav li a {
+        display: block;
+        padding: 0.9rem 1.5rem;
+        color: #fff;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+      }
+      .admin-mobile-nav li:last-child a {
+        border-bottom: none;
+      }
+      .admin-mobile-nav li a:hover {
+        background: #990000;
       }
       .sidebar { display: none !important; }
       .main-content { width: 100% !important; padding: 1rem !important; }
@@ -49,7 +105,7 @@
       <div class="topbar-logo">FrontlineCPR911 Admin</div>
       <button class="mobile-menu-toggle" id="mobile-menu-btn" aria-label="Toggle menu">☰</button>
     </div>
-    <nav class="mobile-nav" id="mobile-nav">
+    <nav class="admin-mobile-nav" id="mobile-nav">
       <ul>
         <li><a href="dashboard.html">Group Requests</a></li>
         <li><a href="clients.html">Clients & Rosters</a></li>
