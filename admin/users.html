@@ -59,10 +59,10 @@
         padding: 0.25rem 0.5rem;
       }
       .admin-mobile-nav {
-        display: none;
+        display: none !important;
       }
       .admin-mobile-nav.open {
-        display: block;
+        display: block !important;
         position: absolute;
         top: calc(100% + 8px);
         right: 1rem;
@@ -100,7 +100,7 @@
 </head>
 <body>
   <!-- Mobile Topbar -->
-  <div class="admin-topbar" data-requires-auth>
+  <div class="admin-topbar">
     <div class="topbar-inner">
       <div class="topbar-logo">FrontlineCPR911 Admin</div>
       <button class="mobile-menu-toggle" id="mobile-menu-btn" aria-label="Toggle menu">☰</button>
