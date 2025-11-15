@@ -633,7 +633,7 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
     /* Mobile card containers */
     .mobile-card-list {
         display: block !important;
-        padding: 0;
+        padding: 0 1rem 1rem 1rem; /* Add right padding */
         margin: 0;
     }
     
@@ -710,14 +710,14 @@ body.admin-ultra .summary-cards .data-point { font-size: 1.8rem; }
     .mobile-card-actions {
         display: flex;
         gap: 0.5rem;
-        flex-wrap: wrap;
+        justify-content: flex-end; /* Align buttons to the right */
         padding-top: 0.5rem;
         border-top: 1px solid var(--color-light-gray);
     }
     
     .mobile-card-actions .btn-action {
-        flex: 1;
-        min-width: 80px;
+        flex: 0 0 auto; /* Don't stretch buttons */
+        min-width: 120px;
         text-align: center;
         justify-content: center;
     }
