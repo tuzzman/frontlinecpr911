@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="icon" href="/tab_icon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/admin20251106.css?v=20251115e" />
+  <link rel="stylesheet" href="/assets/css/admin20251106.css?v=1731616000" />
   <style>
     /* Hide admin content until authenticated */
     [data-requires-auth] {
@@ -39,6 +39,36 @@
       }
       .mobile-card-list {
         display: block !important;
+      }
+      
+      /* Mobile card styling - inline to bypass cache */
+      .mobile-card {
+        background: #fff;
+        border: 1px solid #f4f4f4;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .mobile-card-label {
+        font-weight: 600;
+        color: #666;
+        min-width: 100px;
+        max-width: 100px;
+        flex-shrink: 0;
+        font-size: 0.85rem;
+      }
+      .mobile-card-value {
+        color: #1A1A1A;
+        flex: 1;
+        font-size: 0.9rem;
+        word-wrap: break-word;
+      }
+      .mobile-card-row {
+        display: flex;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: flex-start;
       }
       
       [data-requires-auth].authenticated {
@@ -185,6 +215,6 @@
     </main>
   </div>
 
-  <script src="/assets/js/admin.v3.js?v=20251115d"></script>
+  <script src="/assets/js/admin.v3.js?v=1731616000"></script>
 </body>
 </html>
