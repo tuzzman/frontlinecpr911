@@ -50,6 +50,37 @@
         margin-bottom: 1rem;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
+      .mobile-card-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #f4f4f4;
+        gap: 0.5rem;
+      }
+      .mobile-card-title {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #1A1A1A;
+        margin: 0;
+        flex: 1;
+        min-width: 0; /* Allow title to shrink if needed */
+      }
+      .mobile-card-badge {
+        display: inline-block !important;
+        padding: 0.25rem 0.5rem;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        white-space: nowrap;
+        flex-shrink: 0; /* Prevent badge from shrinking */
+      }
+      .mobile-card-badge.new { background: #CC0000; color: white; }
+      .mobile-card-badge.contacted { background: #FFA500; color: white; }
+      .mobile-card-badge.scheduled { background: #4CAF50; color: white; }
+      .mobile-card-badge.closed { background: #666; color: white; }
       .mobile-card-label {
         font-weight: 600;
         color: #666;
