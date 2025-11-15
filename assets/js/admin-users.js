@@ -115,6 +115,60 @@
                 </tr>
             `;
         }).join('');
+
+        // Render mobile cards
+        renderMobileCards();
+    }
+
+    // Render mobile card layout
+    function renderMobileCards() {
+        let mobileContainer = document.querySelector('.mobile-card-list');
+        
+        if (!mobileContainer) {
+            const section = document.querySelector('.dashboard-table-section');
+            if (!section) return;
+            mobileContainer = document.createElement('div');
+            mobileContainer.className = 'mobile-card-list';
+            section.appendChild(mobileContainer);
+        }
+
+        if (!currentUsers.length) {
+            mobileContainer.innerHTML = '<p style="text-align:center;padding:2rem;color:#666;">No admin users found.</p>';
+            return;
+        }
+
+        mobileContainer.innerHTML = '';
+        const frag = document.createDocumentFragment();
+
+        currentUsers.forEach(u => {
+            const createdDate = u.created_at ? new Date(u.created_at).toLocaleDateString() : '';
+            const card = document.createElement('div');
+            card.className = 'mobile-card';
+            card.setAttribute('data-user-id', u.id);
+            card.innerHTML = `
+                <div class="mobile-card-header">
+                    <h3 class="mobile-card-title">${u.email}</h3>
+                    <span class="mobile-card-badge" style="background:#2196F3;">${u.role}</span>
+                </div>
+                <div class="mobile-card-body">
+                    <div class="mobile-card-row">
+                        <span class="mobile-card-label">ID:</span>
+                        <span class="mobile-card-value">${u.id}</span>
+                    </div>
+                    <div class="mobile-card-row">
+                        <span class="mobile-card-label">Created:</span>
+                        <span class="mobile-card-value">${createdDate}</span>
+                    </div>
+                </div>
+                <div class="mobile-card-actions">
+                    <button class="btn-action edit change-password-btn" data-user-id="${u.id}" data-user-email="${u.email}">Change Password</button>
+                    <button class="btn-action delete delete-user-btn" data-user-id="${u.id}" data-user-email="${u.email}">Delete</button>
+                </div>
+            `;
+            frag.appendChild(card);
+        });
+
+        mobileContainer.appendChild(frag);
     }
 
     // Open add user modal
@@ -187,8 +241,8 @@
         }
     });
 
-    // Handle change password button
-    usersTbody?.addEventListener('click', (e) => {
+    // Handle change password and delete buttons (for both table and mobile cards)
+    document.addEventListener('click', (e) => {
         const changeBtn = e.target.closest('.change-password-btn');
         if (changeBtn) {
             const userId = changeBtn.dataset.userId;

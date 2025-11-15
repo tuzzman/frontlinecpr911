@@ -28,6 +28,14 @@
     
     /* Mobile: show topbar, hide sidebar, adjust layout */
     @media (max-width: 768px) {
+      /* Hide table on mobile, show cards */
+      .class-summary-table {
+        display: none !important;
+      }
+      .mobile-card-list {
+        display: block !important;
+      }
+      
       [data-requires-auth].authenticated {
         display: block !important;
       }
@@ -225,6 +233,6 @@
     </div>
   </div>
 
-  <script src="/assets/js/admin-users.js?v=1731616200"></script>
+  <script src="/assets/js/admin-users.js?v=1731616300"></script>
 </body>
 </html>
