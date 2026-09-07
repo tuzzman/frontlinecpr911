@@ -128,10 +128,13 @@ function renderTimeline() {
   });
   
   if (filtered.length === 0) {
+    const noUpcoming = sessions.length === 0;
     timelineEl.innerHTML = `
       <div class="no-sessions-msg">
-        <h3>No classes found</h3>
-        <p>Try adjusting your filters to see more available sessions.</p>
+        <h3>${noUpcoming ? 'No upcoming classes' : 'No classes found'}</h3>
+        <p>${noUpcoming
+          ? 'Nothing is scheduled right now. Please check back soon or request a group session.'
+          : 'Try adjusting your filters to see more available sessions.'}</p>
       </div>
     `;
     return;
