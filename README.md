@@ -25,6 +25,10 @@ python -m http.server 8000
 # then open http://localhost:8000 in your browser
 ```
 
+`python -m http.server` does **not** run PHP. The public class schedule first requests same-origin `/api/classes.php?public=true`, then falls back to `https://www.frontlinecpr911.com/api/classes.php?public=true` (CORS is already `*`). That live public endpoint does not require admin login.
+
+Do not use `/api/clients.php?listType=classes` for the public schedule — that list is admin-only and returns 401 when logged out.
+
 Using Node (http-server):
 
 ```powershell
@@ -97,6 +101,7 @@ The repo includes a lightweight PHP API under `/api` and database schema under `
 	- `POST /api/auth.php` — login `{ email, password }`
 	- `GET /api/auth.php` — current session user
 	- `POST /api/logout.php` — logout
+	- `GET /api/classes.php?public=true` — public upcoming-class list (no login)
 	- `POST /api/group_request.php` — public group training request submit
 	- `GET /api/group_request.php` — admin list with optional `status`, `from`, `to`
 	- `GET /api/export.php?type=group_requests` — CSV export with optional filters (`status`, `from`, `to`)

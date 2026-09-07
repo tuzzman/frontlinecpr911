@@ -8,7 +8,8 @@ if ($method === 'GET') {
     $idParam = isset($_GET['id']) ? (int)$_GET['id'] : null;
     
     if ($public) {
-        // Public listing or single-class fetch
+        // Public listing or single-class fetch (no admin session required).
+        // Used by the home page and classes.html. Admin list/create/update/delete stay behind require_admin().
         if ($idParam) {
             // Single class fetch
             $stmt = $pdo->prepare('SELECT id, course_type, start_datetime, location, price, max_capacity, notes FROM classes WHERE id = :id');

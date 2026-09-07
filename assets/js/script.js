@@ -47,49 +47,55 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ----------------------------------------------------
-    // NEW: Class Loading & Rendering Logic
+    // Class Loading & Rendering Logic (public API, no admin auth)
     // ----------------------------------------------------
     const classListContainer = document.getElementById('class-list-container');
     const selectedClassInput = document.getElementById('selected_class'); // For registration form
 
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function parseClassDate(dtStr) {
+        if (!dtStr) return null;
+        const parsed = new Date(String(dtStr).replace(' ', 'T'));
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function isUpcomingClass(classData) {
+        const start = parseClassDate(classData && classData.start_datetime);
+        return !!(start && start >= new Date());
+    }
+
+    function spotsLeft(classData) {
+        if (!classData) return null;
+        if (classData.spots_left != null && classData.spots_left !== '') {
+            return Number(classData.spots_left);
+        }
+        if (classData.max_capacity == null || classData.max_capacity === '') return null;
+        return Math.max(0, Number(classData.max_capacity) - Number(classData.registrations || 0));
+    }
+
     if (classListContainer) {
         loadUpcomingClasses();
     }
-    
-    // Function to load data and render class cards
+
     async function loadUpcomingClasses() {
-        // Show loading state
-        if (classListContainer) {
-            classListContainer.innerHTML = '<p class="intro-text">Loading schedule…</p>';
-        }
+        classListContainer.innerHTML = '<p class="intro-text">Loading schedule…</p>';
         try {
-            // Try primary API
-            let classes = await fetchJson(`${API_BASE_URL}/classes`);
-
-            // If API returns nothing or not an array, fall back
-            if (!Array.isArray(classes)) {
-                throw new Error('Unexpected API response shape');
+            if (!window.FrontlinePublicApi || typeof window.FrontlinePublicApi.fetchPublicClasses !== 'function') {
+                throw new Error('Public API helper is not loaded');
             }
-
-            renderClassList(classes);
+            const classes = await window.FrontlinePublicApi.fetchPublicClasses();
+            renderClassList(classes.filter(isUpcomingClass));
         } catch (apiError) {
-            console.warn('Primary API failed, attempting local fallback…', apiError);
-            try {
-                const fallback = await fetchJson('assets/data/classes.json');
-                renderClassList(Array.isArray(fallback) ? fallback : []);
-            } catch (fallbackError) {
-                console.error('Fallback load failed:', fallbackError);
-                classListContainer.innerHTML = '<p class="intro-text" style="color: var(--color-primary);">Error loading schedule. Please refresh the page.</p>';
-            }
+            console.error('Failed to load class schedule', apiError);
+            classListContainer.innerHTML = '<p class="intro-text" style="color: var(--color-primary);">Unable to load class schedule. Please try again later.</p>';
         }
-    }
-
-    async function fetchJson(url) {
-        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status} for ${url}`);
-        }
-        return res.json();
     }
 
     function renderClassList(classes) {
@@ -104,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
             classListContainer.appendChild(card);
         });
 
-        // Re-attach the registration listeners after new cards are added
         attachRegistrationListeners();
     }
     
@@ -191,30 +196,42 @@ document.addEventListener('DOMContentLoaded', () => {
         trustMetrics.forEach(metric => observer.observe(metric));
     }
 
-    // Function to generate the HTML element for a single class
+    // Function to generate the HTML element for a single class (PHP public API shape)
     function createClassCard(data) {
-        const spotsLeft = data.maxCapacity - data.registrations;
-        const isFull = spotsLeft <= 0;
+        const left = spotsLeft(data);
+        const isFull = left !== null && left <= 0;
+        const start = parseClassDate(data.start_datetime);
+        const dateText = start
+            ? start.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+            : 'TBD';
+        const timeText = start
+            ? start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+            : 'TBD';
+        const priceNum = data.price != null && data.price !== '' ? Number(data.price) : null;
+        const priceLabel = priceNum != null && !Number.isNaN(priceNum)
+            ? (priceNum % 1 === 0 ? String(priceNum) : priceNum.toFixed(2))
+            : '';
+        const capacityText = isFull
+            ? 'Status: Class Full'
+            : (left !== null ? `Spots Available: ${left} / ${data.max_capacity}` : 'Registration open');
         const card = document.createElement('article');
         card.className = `class-card ${isFull ? 'sold-out' : ''}`;
-        
+
         card.innerHTML = `
             <div class="class-info">
-                <h3>${data.courseName}</h3>
+                <h3>${escapeHtml(data.course_type || 'Class')}</h3>
                 <p class="details">
-                    **📅 Date:** ${new Date(data.classDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} <br>
-                    **⏱ Time:** ${data.startTime} <br>
-                    **📍 Location:** ${data.location}
+                    📅 Date: ${escapeHtml(dateText)} <br>
+                    ⏱ Time: ${escapeHtml(timeText)} <br>
+                    📍 Location: ${escapeHtml(data.location || 'TBD')}
                 </p>
-                <p class="capacity">
-                    **${isFull ? 'Status: Class Full' : `Spots Available: ${spotsLeft} / ${data.maxCapacity}`}**
-                </p>
+                <p class="capacity">${escapeHtml(capacityText)}</p>
             </div>
             <div class="class-action">
-                <span class="price">$${data.price}</span>
-                ${isFull 
-                    ? `<button class="btn btn-secondary" disabled>Waitlist Only</button>` 
-                    : `<a href="#registration-form" class="btn btn-primary register-btn" data-class-id="${data._id}" data-course-name="${data.courseName}">Register Now</a>`
+                ${priceLabel ? `<span class="price">$${escapeHtml(priceLabel)}</span>` : ''}
+                ${isFull
+                    ? `<button class="btn btn-secondary" disabled>Waitlist Only</button>`
+                    : `<a href="classes.html" class="btn btn-primary">Register Now</a>`
                 }
             </div>
         `;
