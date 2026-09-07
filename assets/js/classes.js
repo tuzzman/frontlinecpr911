@@ -65,42 +65,23 @@ let activeCourseFilter = '';
 let activeMonthFilter = '';
 let activeSessionId = null;
 
-// Fetch sessions from API
+// Fetch sessions from the public API (no admin login).
+// Same-origin /api works on Hostinger; local http.server falls back to the live origin.
 async function fetchSessions() {
   try {
-    const response = await fetch(`${API_BASE}/classes.php?public=true`);
-    
-    // Log response details for debugging
-    console.log('API Response status:', response.status);
-    console.log('API Response headers:', response.headers.get('content-type'));
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API Error Response:', errorText);
-      throw new Error('Failed to fetch classes');
+    if (!window.FrontlinePublicApi || typeof window.FrontlinePublicApi.fetchPublicClasses !== 'function') {
+      throw new Error('Public API helper is not loaded');
     }
-    
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const responseText = await response.text();
-      console.error('Non-JSON response received:', responseText.substring(0, 500));
-      throw new Error('Server returned invalid response format');
-    }
-    
-    const result = await response.json();
-    if (result.success && Array.isArray(result.data)) {
-      // Filter to only show future classes
-      const now = new Date();
-      sessions = result.data.filter(s => {
-        if (!s.start_datetime) return false;
-        const startDate = new Date(s.start_datetime.replace(' ', 'T'));
-        return startDate >= now;
-      });
-      
-      renderTimeline();
-    } else {
-      showError('Failed to load class schedule');
-    }
+
+    const rows = await window.FrontlinePublicApi.fetchPublicClasses();
+    const now = new Date();
+    sessions = rows.filter(s => {
+      if (!s.start_datetime) return false;
+      const startDate = new Date(s.start_datetime.replace(' ', 'T'));
+      return startDate >= now;
+    });
+
+    renderTimeline();
   } catch (error) {
     console.error('Error fetching sessions:', error);
     showError('Unable to load class schedule. Please try again later.');
